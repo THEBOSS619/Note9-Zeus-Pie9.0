@@ -44,8 +44,10 @@ enum input_boost_type {
 static DEFINE_PER_CPU(struct cpu_sync, sync_info);
 static struct kthread_work input_boost_work;
 
-static struct kthread_work powerkey_input_boost_work;
-static bool input_boost_enabled;
+static unsigned int kthread_work powerkey_input_boost_work = 1;
+static unsigned int input_boost_enabled = 1;
+module_param(input_boost_enabled, uint, 0644);
+module_param(kthread_work powerkey_input_boost_work, uint, 0644);
 
 static unsigned int input_boost_ms = 40;
 module_param(input_boost_ms, uint, 0644);
