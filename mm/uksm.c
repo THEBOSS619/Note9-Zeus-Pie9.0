@@ -104,7 +104,7 @@ int memcmpx86_32(void *s1, void *s2, size_t n)
 /*
  * Check the page is all zero ?
  */
-static int is_full_zero(void *s1, size_t len)
+static int is_full_zero(const void *s1, size_t len)
 {
 	unsigned char same;
 
@@ -146,7 +146,7 @@ int memcmpx86_64(void *s1, void *s2, size_t n)
 	return res;
 }
 
-static int is_full_zero(const void *s1, size_t len)
+static int is_full_zero(void *s1, size_t len)
 {
 	unsigned char same;
 
@@ -166,7 +166,7 @@ static int is_full_zero(const void *s1, size_t len)
 #elif defined(CONFIG_ARM)
 #include "uksm_arm.h"
 #else
-static int is_full_zero(const void *s1, size_t len)
+static int is_full_zero(void *s1, size_t len)
 {
 	const unsigned long *src = s1;
 	int i;
@@ -5635,12 +5635,7 @@ static int __init uksm_init(void)
 	struct task_struct *uksm_thread;
 	int err;
 
-<<<<<<< HEAD
-	uksm_sleep_jiffies = msecs_to_jiffies(100);
-	uksm_sleep_saved = uksm_sleep_jiffies;
-=======
 	uksm_sleep_jiffies = msecs_to_jiffies(DEFAULT_SLEEP_MILLISECS);
->>>>>>> 37609be938e859...  Tune UKSM to work with Android Devices
 
 	slot_tree_init();
 	init_scan_ladder();
