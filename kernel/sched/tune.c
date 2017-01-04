@@ -1283,6 +1283,33 @@ schedtune_group_balancer_init(struct schedtune *st)
 
 }
 
+#ifdef CONFIG_STUNE_ASSIST
+static void write_default_values(struct cgroup_subsys_state *css)
+{
+	u8 i;
+	struct groups_data {
+		char *name;
+		int boost;
+		bool prefer_idle;
+		bool colocate;
+		bool no_override;
+	};
+	struct groups_data groups[3] = {
+		{ "top-app",	5, 1, 0, 0 },
+		{ "foreground", 0, 1, 0, 0 },
+		{ "background", 0, 0, 0, 0 }};
+
+	for (i = 0; i < ARRAY_SIZE(groups); i++) {
+		if (!strcmp(css->cgroup->kn->name, groups[i].name)) {
+			boost_write(css, NULL, groups[i].boost);
+			prefer_idle_write(css, NULL, groups[i].prefer_idle);
+			sched_colocate_write(css, NULL, groups[i].colocate);
+			sched_boost_override_write(css, NULL, groups[i].no_override);
+		}
+	}
+}
+#endif
+
 static struct cgroup_subsys_state *
 schedtune_css_alloc(struct cgroup_subsys_state *parent_css)
 {
@@ -1299,9 +1326,17 @@ schedtune_css_alloc(struct cgroup_subsys_state *parent_css)
 	}
 
 	/* Allow only a limited number of boosting groups */
+#ifdef CONFIG_STUNE_ASSIST
+	for (idx = 1; idx < BOOSTGROUPS_COUNT; ++idx) {
+		if (!allocated_group[idx])
+			break;
+		write_default_values(&allocated_group[idx]->css);
+	}
+#else
 	for (idx = 1; idx < BOOSTGROUPS_COUNT; ++idx)
 		if (!allocated_group[idx])
 			break;
+#endif
 	if (idx == BOOSTGROUPS_COUNT) {
 		pr_err("Trying to create more than %d SchedTune boosting groups\n",
 		       BOOSTGROUPS_COUNT);
@@ -1383,7 +1418,7 @@ static struct schedtune *getSchedtune(char *st_name)
 {
 	int idx;
 
-	for (idx = 1; idx < BOOSTGROUPS_COUNT; ++idx) {
+	for (idx = 0; idx < BOOSTGROUPS_COUNT; ++idx) {
 		char name_buf[NAME_MAX + 1];
 		struct schedtune *st = allocated_group[idx];
 

@@ -1441,7 +1441,7 @@ config SCHED_TUNE
 	  If unsure, say N.
 
 config CPUSET_ASSIST
-	bool "CPUSet configuration helper"
+	bool "Cpuset configuration helper"
 	depends on CPUSETS
 	depends on ANDROID
 	help
@@ -1461,6 +1461,16 @@ config SCHED_EHMP
 	  prefer_idle that work in conjunction with SCHEDTUNE.
 
 	  If unsure, say N.
+
+config STUNE_ASSIST
+	bool "SchedTune configuration helper"
+	depends on CGROUP_SCHEDTUNE
+	depends on ANDROID
+	help
+	  This option enables the configuration of default SchedTune
+	  parameters from kernel.
+
+	  Say N if unsure.
 
 config DYNAMIC_STUNE_BOOST
 	bool "Dynamic SchedTune boosting support"

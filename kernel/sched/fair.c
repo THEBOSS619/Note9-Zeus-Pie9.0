@@ -21,6 +21,8 @@
  */
 
 #include <linux/sched.h>
+#include <linux/sched/topology.h>
+
 #include <linux/latencytop.h>
 #include <linux/cpumask.h>
 #include <linux/cpuidle.h>
@@ -8653,7 +8655,7 @@ static void update_cpu_capacity(struct sched_domain *sd, int cpu)
 		mcc->val = capacity;
 		mcc->cpu = cpu;
 		ehmp_update_max_cpu_capacity(cpu, capacity);
-#ifdef CONFIG_SCHED_DEBUG
+#if 0
 		raw_spin_unlock_irqrestore(&mcc->lock, flags);
 		pr_debug(KERN_DEBUG "CPU%d: update max cpu_capacity %lu\n",
 				cpu, capacity);
