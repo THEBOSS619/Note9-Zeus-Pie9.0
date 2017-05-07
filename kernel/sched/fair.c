@@ -3733,10 +3733,16 @@ static void check_spread(struct cfs_rq *cfs_rq, struct sched_entity *se)
 }
 
 static unsigned int Lgentle_fair_sleepers = 0;
+static unsigned int Larch_power = 1;
 
 void relay_gfs(unsigned int gfs)
 {
 	Lgentle_fair_sleepers = gfs;
+}
+
+void relay_ap(unsigned int ap)
+{
+	Larch_power = ap;
 }
 
 static void
@@ -8684,11 +8690,21 @@ static void update_cpu_capacity(struct sched_domain *sd, int cpu)
 	cpu_rq(cpu)->cpu_capacity_margin = capacity + (capacity >> 2);
 	ehmp_update_overutilized(cpu, capacity);
 
+	if (Larch_power)
+		capacity *= arch_scale_cpu_capacity(sd, cpu);
+	else
+		capacity *= default_scale_cpu_capacity(sd, cpu);
+
 	mcc = &cpu_rq(cpu)->rd->max_cpu_capacity;
 
 	raw_spin_lock_irqsave(&mcc->lock, flags);
 	max_capacity = mcc->val;
 	max_cap_cpu = mcc->cpu;
+
+	if (Larch_power)
+		capacity *= arch_scale_freq_capacity(sd, cpu);
+	else
+		capacity *= default_scale_capacity(sd, cpu);
 
 	if ((max_capacity > capacity && max_cap_cpu == cpu) ||
 	    (max_capacity < capacity)) {

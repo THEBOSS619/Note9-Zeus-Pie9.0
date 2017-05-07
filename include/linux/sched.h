@@ -3977,4 +3977,15 @@ unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
 }
 #endif
 
+__attribute__((unused)) static unsigned long default_scale_capacity(struct sched_domain *sd, int cpu)
+{
+	return SCHED_CAPACITY_SCALE;
+}
+
+__attribute__((unused)) static unsigned long default_scale_cpu_capacity(struct sched_domain *sd, int cpu)
+{
+	return default_scale_cpu_capacity(sd, cpu);
+}
+
+
 #endif
