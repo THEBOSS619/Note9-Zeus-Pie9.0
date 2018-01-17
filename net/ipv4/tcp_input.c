@@ -129,6 +129,8 @@ int sysctl_tcp_netpm[4] __read_mostly;	/* Timestamp, RAT, PHY status, Access TP 
 #define FLAG_DSACKING_ACK	0x800 /* SACK blocks contained D-SACK info */
 #define FLAG_SACK_RENEGING	0x2000 /* snd_una advanced to a sacked seq */
 #define FLAG_UPDATE_TS_RECENT	0x4000 /* tcp_replace_ts_recent() */
+#define FLAG_NO_CHALLENGE_ACK	0x8000 /* do not call tcp_send_challenge_ack()	*/
+#define FLAG_ACK_MAYBE_DELAYED	0x10000 /* Likely a delayed ACK */
 
 #define FLAG_ACKED		(FLAG_DATA_ACKED|FLAG_SYN_ACKED)
 #define FLAG_NOT_DUP		(FLAG_DATA|FLAG_WIN_UPDATE|FLAG_ACKED)
@@ -3395,8 +3397,7 @@ static void tcp_update_rtt_min(struct sock *sk, u32 rtt_us, const int flag)
 		 */
 		return;
 	}
-
-	minmax_running_min(&tp->rtt_min, wlen, tcp_time_stamp,
+	minmax_running_min(&tp->rtt_min, wlen, tcp_jiffies32,
 			   rtt_us ? : jiffies_to_usecs(1));
 }
 
@@ -3672,12 +3673,12 @@ static int tcp_clean_rtx_queue(struct sock *sk, int prior_fackets,
 	if (skb && (TCP_SKB_CB(skb)->sacked & TCPCB_SACKED_ACKED))
 		flag |= FLAG_SACK_RENEGING;
 
-	if (likely(first_ackt.v64) && !(flag & FLAG_RETRANS_DATA_ACKED)) {
-		seq_rtt_us = skb_mstamp_us_delta(now, &first_ackt);
-		ca_rtt_us = skb_mstamp_us_delta(now, &last_ackt);
+	if (likely(first_ackt) && !(flag & FLAG_RETRANS_DATA_ACKED)) {
+		seq_rtt_us = tcp_stamp_us_delta(tp->tcp_mstamp, first_ackt);
+		ca_rtt_us = tcp_stamp_us_delta(tp->tcp_mstamp, last_ackt);
 
-		if (pkts_acked == 1 && fully_acked && !prior_sacked &&
-		    (tp->snd_una - prior_snd_una) < tp->mss_cache &&
+		if (pkts_acked == 1 && last_in_flight < tp->mss_cache &&
+		    last_in_flight && !prior_sacked && fully_acked &&
 		    sack->rate->prior_delivered + 1 == tp->delivered &&
 		    !(flag & (FLAG_CA_ALERT | FLAG_SYN_ACKED))) {
 			/* Conservatively mark a delayed ACK. It's typically
