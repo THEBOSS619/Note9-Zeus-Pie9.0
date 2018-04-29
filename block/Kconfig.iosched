@@ -44,6 +44,10 @@ config IOSCHED_ANXIETY
 		else. When a request comes in, it will use a lighweight
 		selection algorithm to swiftly process the current pending task.
 
+config IOSCHED_MARROW
+	tristate "Marrow I/O scheduler"
+	default y
+
 config IOSCHED_CFQ
 	tristate "CFQ I/O scheduler"
 	default y
@@ -112,6 +116,8 @@ choice
 	config DEFAULT_FIOPS
 		bool "FIOPS" if IOSCHED_FIOPS=y
 
+	config DEFAULT_MARROW
+		bool "Marrow" if IOSCHED_MARROW=y
 endchoice
 
 config DEFAULT_IOSCHED
@@ -122,6 +128,7 @@ config DEFAULT_IOSCHED
 	default "tripndroid" if DEFAULT_TRIPNDROID
 	default "fiops" if DEFAULT_FIOPS
 	default "sio" if DEFAULT_SIO
+	default "marrow" if DEFAULT_MARROW
 
 endmenu
 
