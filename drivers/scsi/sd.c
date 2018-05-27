@@ -54,6 +54,7 @@
 #include <linux/pm_runtime.h>
 #include <linux/pr.h>
 #include <linux/t10-pi.h>
+#include <linux/iosched_switcher.h>
 #include <asm/uaccess.h>
 #include <asm/unaligned.h>
 #ifdef CONFIG_USB_STORAGE_DETECT
@@ -3382,6 +3383,9 @@ static int sd_probe(struct device *dev)
 	get_device(&sdkp->dev);	/* prevent release before async_schedule */
 	async_schedule_domain(sd_probe_async, sdkp, &scsi_sd_probe_domain);
 
+	if (!strcmp(sdkp->disk->disk_name, "sda"))
+		init_iosched_switcher(sdp->request_queue);
+
 #if defined(CONFIG_UFS_SRPMB)
 	/* rpmb operation for LDFW */
 	if (strncmp(dev_name(dev), IS_INCLUDE_RPMB_DEVICE,
@@ -3477,7 +3481,7 @@ static void scsi_disk_release(struct device *dev)
 {
 	struct scsi_disk *sdkp = to_scsi_disk(dev);
 	struct gendisk *disk = sdkp->disk;
-	struct request_queue *q = disk->queue;
+
 
 	spin_lock(&sd_index_lock);
 	ida_remove(&sd_index_ida, sdkp->index);
