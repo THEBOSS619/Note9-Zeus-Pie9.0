@@ -36,6 +36,7 @@
 #include <linux/compat.h>
 #include <linux/pm_runtime.h>
 #include <linux/idr.h>
+#include <linux/iosched_switcher.h>
 
 #include <linux/mmc/ioctl.h>
 #include <linux/mmc/card.h>
@@ -2952,6 +2953,8 @@ again:
 		if (!mmc_packed_init(&md->queue, card))
 			md->flags |= MMC_BLK_PACKED_CMD;
 	}
+
+	init_iosched_switcher(md->queue.queue);
 
 	return md;
 
