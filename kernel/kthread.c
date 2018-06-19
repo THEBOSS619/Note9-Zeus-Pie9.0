@@ -751,6 +751,10 @@ static inline bool queuing_blocked(struct kthread_worker *worker,
 
 static void kthread_insert_work_sanity_check(struct kthread_worker *worker,
 					     struct kthread_work *work)
+/* insert @work before @pos in @worker */
+static void insert_kthread_work(struct kthread_worker *worker,
+			       struct kthread_work *work,
+			       struct list_head *pos)
 {
 	lockdep_assert_held(&worker->lock);
 	WARN_ON_ONCE(!list_empty(&work->node));
