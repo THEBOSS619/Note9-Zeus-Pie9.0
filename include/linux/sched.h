@@ -51,6 +51,7 @@ struct sched_param {
 #include <linux/timer.h>
 #include <linux/hrtimer.h>
 #include <linux/kcov.h>
+#include <linux/psi_types.h>
 #include <linux/task_io_accounting.h>
 #include <linux/latencytop.h>
 #include <linux/cred.h>
@@ -1000,6 +1001,10 @@ enum cpu_idle_type {
 	CPU_MAX_IDLE_TYPES
 };
 
+#ifdef CONFIG_PSI
+	unsigned			sched_psi_wake_requeue:1;
+#endif
+
 /*
  * Integer metrics need fixed point arithmetic, e.g., sched/fair
  * has a few: load, load_avg, util_avg, freq, and capacity.
@@ -1473,6 +1478,10 @@ struct ontime_entity {
 	int flags;
 	int cpu;
 };
+
+#ifdef CONFIG_PSI
+	/* Pressure stall state */
+	unsigned int			psi_flags;
 #endif
 
 #ifdef CONFIG_SCHEDSTATS
@@ -3216,6 +3225,7 @@ extern void mmput(struct mm_struct *);
  */
 extern void mmput_async(struct mm_struct *);
 #endif
+#define PF_MEMSTALL		0x01000000	/* Stalled due to lack of memory */
 
 /* Grab a reference to a task's mm, if it is not already going away */
 extern struct mm_struct *get_task_mm(struct task_struct *task);
