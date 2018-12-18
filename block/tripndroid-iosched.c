@@ -30,7 +30,7 @@ static const int async_read_expire  =  HZ / 6;	/* ditto for async, these limits 
 static const int async_write_expire = 4 * HZ;	/* ditto for async, these limits are SOFT! */
 
 static const int writes_starved = 1;		/* max times reads can starve a write */
-static const int fifo_batch     = 3;		/* sequential requests treated as one, for throughput. */
+static const int fifo_batch     = 16;		/* sequential requests treated as one, for throughput. */
 
 struct tripndroid_data {
 
