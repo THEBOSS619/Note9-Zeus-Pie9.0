@@ -6,13 +6,21 @@
 #define _CPU_INPUT_BOOST_H_
 
 #ifdef CONFIG_CPU_INPUT_BOOST
+extern unsigned long last_input_time;
+
 void cpu_input_boost_kick(void);
 void cpu_input_boost_kick_max(unsigned int duration_ms);
+void cpu_input_boost_kick_wake(void);
+void cpu_input_boost_kick_general(unsigned int duration_ms);
 #else
 static inline void cpu_input_boost_kick(void)
 {
 }
 static inline void cpu_input_boost_kick_max(unsigned int duration_ms)
+{
+}
+static inline void cpu_input_boost_kick_wake(void)
+static inline void cpu_input_boost_kick_general(unsigned int duration_ms)
 {
 }
 #endif

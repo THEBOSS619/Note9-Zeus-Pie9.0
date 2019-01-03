@@ -48,6 +48,8 @@
 #include <linux/proc_fs.h>
 #include <linux/slab.h>
 #include <linux/poll.h>
+#include <linux/cpu_input_boost.h>
+
 
 #define CREATE_TRACE_POINTS
 #include "trace/lowmemorykiller.h"
@@ -406,6 +408,11 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 			     sc->nr_to_scan, sc->gfp_mask);
 		return SHRINK_STOP;
 	}
+
+	cpu_input_boost_kick_general(100);
+#ifdef CONFIG_CPU_INPUT_BOOST_DEBUG
+	pr_info("kicked general cpu boost for 100 ms\n");
+#endif
 
 	selected_oom_score_adj = min_score_adj;
 
