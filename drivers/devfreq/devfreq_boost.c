@@ -9,6 +9,8 @@
 #include <linux/devfreq_boost.h>
 #include <linux/fb.h>
 #include <linux/input.h>
+#include <linux/input.h>
+#include <linux/slab.h>
 
 struct boost_dev {
 	struct workqueue_struct *wq;
@@ -21,6 +23,7 @@ struct boost_dev {
 	unsigned long boost_freq;
 	unsigned long max_boost_expires;
 	unsigned long max_boost_jiffies;
+	bool disable;
 	spinlock_t lock;
 };
 
@@ -70,7 +73,7 @@ void devfreq_boost_kick(enum df_device device)
 }
 
 static void __devfreq_boost_kick_max(struct boost_dev *b,
-				     unsigned int duration_ms)
+	unsigned int duration_ms)
 {
 	unsigned long flags, new_expires;
 
@@ -264,7 +267,8 @@ static int fb_notifier_cb(struct notifier_block *nb,
 
 	/* Boost when the screen turns on and unboost when it turns off */
 	d->screen_awake = *blank == FB_BLANK_UNBLANK;
-	if (d->screen_awake) {
+	devfreq_disable_boosting(d, !screen_awake);
+	if (screen_awake) {
 		int i;
 
 		for (i = 0; i < DEVFREQ_MAX; i++)
