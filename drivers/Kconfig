@@ -241,4 +241,6 @@ source "drivers/five/Kconfig"
 
 source "drivers/mpsd/Kconfig"
 
+source "drivers/dts_eagle/Kconfig"
+
 endmenu
