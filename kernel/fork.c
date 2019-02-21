@@ -80,6 +80,7 @@
 #include <linux/cpufreq_times.h>
 #include <linux/cpu_input_boost.h>
 #include <linux/cpu_input_boost.h>
+#include <linux/devfreq_boost.h>
 #include <linux/state_notifier.h>
 
 #include <asm/pgtable.h>
@@ -2052,6 +2053,7 @@ long _do_fork(unsigned long clone_flags,
 	if (is_zygote_pid(current->pid) && !state_suspended &&
 		time_before(jiffies, last_input_jiffies + msecs_to_jiffies(150))) {
 		cpu_input_boost_kick_max(1250);
+	devfreq_boost_kick_max(DEVFREQ_EXYNOS_MIF, 1250);
 #if defined(CONFIG_CPU_INPUT_BOOST_DEBUG) || defined(CONFIG_DEVFREQ_BOOST_DEBUG)
 		pr_info("fork: kicked max cpu boost for 1250 ms for app launch\n");
 #endif
