@@ -221,6 +221,9 @@ void cpu_input_boost_kick(void)
 		return;
 
 	__cpu_input_boost_kick(b);
+
+	if (likely(input_boost_duration))
+		queue_work(b->wq, &b->input_boost);
 }
 
 static void __cpu_input_boost_kick_max(struct boost_drv *b,
@@ -489,6 +492,9 @@ static void cpu_input_boost_input_event(struct input_handle *handle,
 	struct boost_drv *b = handle->handler->private;
 
 	__cpu_input_boost_kick(b);
+
+	if (likely(input_boost_duration))
+		queue_work(b->wq, &b->input_boost);
 
 	last_input_jiffies = jiffies;
 }
