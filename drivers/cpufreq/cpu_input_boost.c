@@ -32,6 +32,7 @@ static __read_mostly unsigned int input_boost_awake_return_freq_hp = CONFIG_AWAK
 static __read_mostly unsigned int general_boost_freq_lp = CONFIG_GENERAL_BOOST_FREQ_LP;
 static __read_mostly unsigned int general_boost_freq_hp = CONFIG_GENERAL_BOOST_FREQ_PERF;
 static __read_mostly unsigned short input_boost_duration = CONFIG_INPUT_BOOST_DURATION_MS;
+static __read_mostly unsigned short wake_boost_duration = CONFIG_WAKE_BOOST_DURATION_MS;
 
 module_param(input_boost_freq_lp, uint, 0644);
 module_param(input_boost_freq_hp, uint, 0644);
@@ -42,6 +43,7 @@ module_param(input_boost_awake_return_freq_hp, uint, 0644);
 module_param(general_boost_freq_lp, uint, 0644);
 module_param(general_boost_freq_hp, uint, 0644);
 module_param(input_boost_duration, short, 0644);
+module_param(wake_boost_duration, short, 0644);
 
 #ifdef CONFIG_DYNAMIC_STUNE_BOOST
 static __read_mostly int input_stune_boost = CONFIG_INPUT_STUNE_BOOST;
@@ -251,7 +253,7 @@ void cpu_input_boost_kick_max(unsigned int duration_ms)
 
 void cpu_input_boost_kick_wake(void)
 {
-	cpu_input_boost_kick_max(CONFIG_WAKE_BOOST_DURATION_MS);
+	cpu_input_boost_kick_max(wake_boost_duration);
 }
 
 static void __cpu_input_boost_kick_general(struct boost_drv *b,
@@ -438,7 +440,7 @@ static int fb_notifier_cb(struct notifier_block *nb,
 			           display_stune_boost, &b->display_stune_slot);
 		update_stune_boost(b, &b->display_bg_stune_active, ST_BG,
 			           display_bg_stune_boost, &b->display_bg_stune_slot);
-		__cpu_input_boost_kick_max(b, CONFIG_WAKE_BOOST_DURATION_MS);
+		__cpu_input_boost_kick_max(b, wake_boost_duration);
 		disable_schedtune_boost(0);
 #ifdef CONFIG_CPU_INPUT_BOOST_DEBUG
 		pr_info("kicked max wake boost due to unblank event\n");
@@ -475,7 +477,7 @@ static void cpu_input_boost_input_event(struct input_handle *handle,
 
 	if (type == EV_KEY && code == KEY_POWER && value == 1 &&
 	    !(get_boost_state(b) & SCREEN_AWAKE))
-		__cpu_input_boost_kick_max(b, CONFIG_WAKE_BOOST_DURATION_MS);
+		__cpu_input_boost_kick_max(b, wake_boost_duration);
 
 	last_input_jiffies = jiffies;
 }
