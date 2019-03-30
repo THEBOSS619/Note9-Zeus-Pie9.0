@@ -246,6 +246,8 @@ void cpu_input_boost_kick_max(unsigned int duration_ms)
 	if (!b)
 		return;
 
+	if (!(get_boost_state(b) & SCREEN_AWAKE))
+		return;
 
 	energy_aware_enable = false;
 	__cpu_input_boost_kick_max(b, duration_ms);
@@ -253,7 +255,12 @@ void cpu_input_boost_kick_max(unsigned int duration_ms)
 
 void cpu_input_boost_kick_wake(void)
 {
-	cpu_input_boost_kick_max(wake_boost_duration);
+	struct boost_drv *b = boost_drv_g;
+
+	if (!b)
+		return;
+
+	__cpu_input_boost_kick_max(b, wake_boost_duration);
 }
 
 static void __cpu_input_boost_kick_general(struct boost_drv *b,
