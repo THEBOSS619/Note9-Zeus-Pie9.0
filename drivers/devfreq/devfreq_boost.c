@@ -101,6 +101,9 @@ void devfreq_boost_kick_max(enum df_device device, unsigned int duration_ms)
 	if (!d)
 		return;
 
+	if (!atomic_read(&d->screen_awake))
+		return;
+
 	if (disable_boost)
 		return;
 
@@ -109,7 +112,13 @@ void devfreq_boost_kick_max(enum df_device device, unsigned int duration_ms)
 
 void devfreq_boost_kick_wake(enum df_device device)
 {
-	devfreq_boost_kick_max(device, CONFIG_DEVFREQ_WAKE_BOOST_DURATION_MS);
+	struct df_boost_drv *d = df_boost_drv_g;
+
+	if (!d)
+		return;
+
+	__devfreq_boost_kick_max(d->devices + device,
+				 CONFIG_DEVFREQ_WAKE_BOOST_DURATION_MS);
 }
 
 void devfreq_register_boost_device(enum df_device device, struct devfreq *df)
