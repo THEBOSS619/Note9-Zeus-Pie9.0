@@ -6234,7 +6234,7 @@ schedtune_cpu_margin(unsigned long util, int cpu)
 	int boost = schedtune_cpu_boost(cpu);
 	unsigned long cap = capacity_orig_of(cpu);
 
-	if (boost == 0)
+	if (boost == 0 || boost == 2 || disable_boost)
 		return 0;
 
 	return schedtune_margin(cap, util, boost);
@@ -6249,7 +6249,7 @@ schedtune_task_margin(struct task_struct *p)
 	unsigned long util;
 	long margin;
 
-	if (boost == 0)
+	if (boost == 0 || boost == 2 || disable_boost)
 		return 0;
 
 	util = task_util(p);
