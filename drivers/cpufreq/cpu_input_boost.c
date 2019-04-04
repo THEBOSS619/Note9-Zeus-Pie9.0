@@ -4,6 +4,10 @@
  * Copyright (C) 2019 Danny Lin <danny@kdrag0n.dev>.
  */
 
+/*
+Improved by THEBOSS619 
+*/
+
 #define pr_fmt(fmt) "cpu_input_boost: " fmt
 
 #include <linux/cpu.h>
@@ -112,6 +116,7 @@ struct boost_drv {
 	int bg_stune_boost_default;
 	int root_stune_boost_default;
 	bool bg_stune_default_set;
+	unsigned long last_input_jiffies;
 };
 
 static struct boost_drv *boost_drv_g __read_mostly;
@@ -192,6 +197,17 @@ static void clear_stune_boost(struct boost_drv *b, bool *active, char *st,
 {
 	if (*active)
 		*active = reset_stune_boost(st, slot);
+}
+
+bool cpu_input_boost_within_input(unsigned long timeout_ms)
+{
+	struct boost_drv *b = boost_drv_g;
+
+	if (!b)
+		return true;
+
+	return time_before(jiffies, b->last_input_jiffies +
+			   msecs_to_jiffies(timeout_ms));
 }
 
 static void unboost_all_cpus(struct boost_drv *b)
@@ -432,12 +448,21 @@ static int cpu_notifier_cb(struct notifier_block *nb,
 	/* Unboost when the screen is off */
 	if (state & SCREEN_AWAKE) {
 		policy->min = policy->cpuinfo.min_freq;
+		clear_stune_boost(b, &b->input_stune_active, ST_TA, b->input_stune_slot);
+		clear_stune_boost(b, &b->max_stune_active, ST_TA, b->max_stune_slot);
+		clear_stune_boost(b, &b->general_stune_active, ST_TA, b->general_stune_slot);
 		return NOTIFY_OK;
 	}
 
 	/* Boost CPU to max frequency for max boost */
 	if (state & MAX_BOOST) {
 		policy->min = policy->max;
+		update_stune_boost(b, &b->input_stune_active, ST_TA, input_stune_boost,
+				   &b->input_stune_slot);
+		update_stune_boost(b, &b->max_stune_active, ST_TA, max_stune_boost,
+				   &b->max_stune_slot);
+		update_stune_boost(b, &b->general_stune_active, ST_TA,
+				   general_stune_boost, &b->general_stune_slot);
 		return NOTIFY_OK;
 	}
 
@@ -452,9 +477,18 @@ static int cpu_notifier_cb(struct notifier_block *nb,
 	 */
 	if (state & INPUT_BOOST || state & GENERAL_BOOST) {
 		policy->min = min(policy->max, boost_freq);
+		update_stune_boost(b, &b->input_stune_active, ST_TA, input_stune_boost,
+				   &b->input_stune_slot);
+		update_stune_boost(b, &b->max_stune_active, ST_TA, max_stune_boost,
+				   &b->max_stune_slot);
+		update_stune_boost(b, &b->general_stune_active, ST_TA,
+				   general_stune_boost, &b->general_stune_slot);
 	} else {
 		min_freq = get_min_freq(b, policy->cpu, state);
 		policy->min = max(policy->cpuinfo.min_freq, min_freq);
+		clear_stune_boost(b, &b->input_stune_active, ST_TA, b->input_stune_slot);
+		clear_stune_boost(b, &b->max_stune_active, ST_TA, b->max_stune_slot);
+		clear_stune_boost(b, &b->general_stune_active, ST_TA, b->general_stune_slot);
 	}
 
 	return NOTIFY_OK;
@@ -528,6 +562,7 @@ static void cpu_input_boost_input_event(struct input_handle *handle,
 		__cpu_input_boost_kick_max(b, wake_boost_duration);
 
 	last_input_jiffies = jiffies;
+	b->last_input_jiffies = jiffies;
 }
 
 static int cpu_input_boost_input_connect(struct input_handler *handler,
@@ -653,6 +688,7 @@ static int __init cpu_input_boost_init(void)
 	b->bg_stune_boost_default = INT_MIN;
 	b->root_stune_boost_default = INT_MIN;
 	b->bg_stune_default_set = false;
+	b->last_input_jiffies = jiffies;
 
 	b->cpu_notif.notifier_call = cpu_notifier_cb;
 	b->cpu_notif.priority = INT_MAX - 2;
