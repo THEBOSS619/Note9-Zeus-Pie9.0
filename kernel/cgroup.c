@@ -2935,9 +2935,20 @@ static ssize_t __cgroup_procs_write(struct kernfs_open_file *of, char *buf,
 
 	if (!ret && !threadgroup && !state_suspended &&
 	    !strcmp(of->kn->parent->name, "top-app") &&
-	    is_zygote_pid(tsk->parent->pid)) {
+	    !strcmp(of->kn->parent->name, "rt") &&
+	    !strcmp(of->kn->parent->name, "foreground") &&
+	    !strcmp(tsk->comm, "ch.deletescape.lawnchair.plah") &&
+	    !strcmp(tsk->comm, "com.android.phone") &&
+	    !strcmp(tsk->comm, "com.android.chrome") &&
+	    !strcmp(tsk->comm, "com.android.server.telecom") &&
+	    !strcmp(tsk->comm, "com.samsung.android.incallui") &&
+	    !strcmp(tsk->comm, "com.samsung.android.contacts") &&
+	    !strcmp(tsk->comm, "com.android.settings") &&
+	    !strcmp(tsk->comm, "com.sec.android.inputmethod") &&
+	    !strcmp(tsk->comm, "com.mobisystems.office") &&
+	    task_is_zygote(tsk->parent)) {
+		cpu_input_boost_kick_max(1250);
 		devfreq_boost_kick_max(DEVFREQ_EXYNOS_MIF, 500);
-		cpu_input_boost_kick_max(500);
 	}
 
 	put_task_struct(tsk);
