@@ -12,7 +12,6 @@
 #   include <linux/sched/mm.h>
 #endif
 
-
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
 /* Kernel version 4.10.0 adds locked argument
    (See https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/include/linux/mm.h?id=5b56d49fc31dbb0487e14ead790fc81ca9fb2c99) */
