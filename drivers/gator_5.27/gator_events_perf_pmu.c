@@ -536,9 +536,8 @@ static int gator_events_perf_pmu_reread(void)
             const struct gator_cpu *gator_cpu = gator_find_cpu_by_cpuid(gator_cpuids[cpu]);
 
             if (gator_cpu == NULL) {
+#if defined(__arm__) || defined(__aarch64__)
                 pr_err("gator: This CPU is not recognized, using the Arm architected counters\n");
-                gator_cpu = &gator_pmu_other;
-            }
 #else
                 pr_err("gator: This CPU is not recognized, using perf built in hardware counters\n");
 #endif
