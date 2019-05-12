@@ -30,8 +30,6 @@
 #else
 #define GLOBAL_ZONE_PAGE_STATE(item)    global_zone_page_state(item)
 #endif
-<<<<<<< HEAD
-=======
 
 #define GLOBAL_NODE_PAGE_STATE(item)    global_node_page_state(item)
 
@@ -51,7 +49,6 @@
 #define READ_NR_FILE_PAGES              GLOBAL_NODE_PAGE_STATE(NR_FILE_PAGES)
 #endif
 
->>>>>>> d9af11d6afb56... GATOR: Update GATOR to 6.8
 enum {
     MEMINFO_MEMFREE,
     MEMINFO_MEMUSED,
