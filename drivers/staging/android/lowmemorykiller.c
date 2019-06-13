@@ -527,7 +527,6 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 
 		lowmem_deathpending_timeout = jiffies + HZ;
 		rem += selected_tasksize;
-		lowmem_lmkcount++;
 	}
 
 	lowmem_print(4, "lowmem_scan %lu, %x, return %lu\n",
@@ -536,10 +535,6 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 
 	if (selected)
 		handle_lmk_event(selected, min_score_adj);
-
-	if (!rem)
-		rem = SHRINK_STOP;
-
 	return rem;
 }
 
