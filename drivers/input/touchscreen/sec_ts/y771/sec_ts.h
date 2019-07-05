@@ -39,6 +39,8 @@
 #include <linux/wakelock.h>
 #include <linux/workqueue.h>
 
+#define IRQ_FLAGS IRQF_TRIGGER_LOW | IRQF_ONESHOT | IRQF_PERF_CRITICAL
+
 #if defined(CONFIG_TRUSTONIC_TRUSTED_UI)
 #include <linux/t-base-tui.h>
 #endif
@@ -900,7 +902,6 @@ struct sec_ts_plat_data {
 	int dispay_x;
 	int dispay_y;
 	unsigned irq_gpio;
-	int irq_type;
 	int i2c_burstmax;
 	int always_lpmode;
 	int bringup;

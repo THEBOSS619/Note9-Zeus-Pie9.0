@@ -1782,13 +1782,6 @@ static int sec_ts_parse_dt(struct i2c_client *client)
 
 	client->irq = gpio_to_irq(pdata->irq_gpio);
 
-	if (of_property_read_u32(np, "sec,irq_type", &pdata->irq_type)) {
-		input_err(true, dev, "%s: Failed to get irq_type property\n", __func__);
-		pdata->irq_type = IRQF_TRIGGER_LOW | IRQF_ONESHOT;
-	} else {
-		input_info(true, dev, "%s: irq_type property:%X, %d\n", __func__,
-				pdata->irq_type, pdata->irq_type);
-	}
 
 	if (of_property_read_u32(np, "sec,i2c-burstmax", &pdata->i2c_burstmax)) {
 		input_dbg(false, &client->dev, "%s: Failed to get i2c_burstmax property\n", __func__);
@@ -1968,11 +1961,6 @@ static int sec_ts_parse_dt(struct i2c_client *client)
 	pdata->support_mt_pressure = true;
 #endif
 
-	input_err(true, &client->dev, "%s: i2c buffer limit: %d, lcd_id:%06X, bringup:%d, FW:%s(%d), id:%d,%d, mis_cal:%d dex:%d, gesture:%d pressure:%s max(%d/%d)\n",
-			__func__, pdata->i2c_burstmax, lcdtype, pdata->bringup, pdata->firmware_name,
-			count, pdata->tsp_id, pdata->tsp_icid, pdata->mis_cal_check,
-			pdata->support_dex, pdata->support_sidegesture, pdata->support_pressure,
-			pdata->max_x, pdata->max_y);
 	return ret;
 }
 
@@ -2476,7 +2464,7 @@ static int sec_ts_probe(struct i2c_client *client, const struct i2c_device_id *i
 	input_info(true, &ts->client->dev, "%s: request_irq = %d\n", __func__, client->irq);
 
 	ret = request_threaded_irq(client->irq, NULL, sec_ts_irq_thread,
-			ts->plat_data->irq_type, SEC_TS_I2C_NAME, ts);
+			IRQ_FLAGS, SEC_TS_I2C_NAME, ts);
 	if (ret < 0) {
 		input_err(true, &ts->client->dev, "%s: Unable to request threaded irq\n", __func__);
 		goto err_irq;
@@ -2869,7 +2857,7 @@ void sec_ts_recovery_irq_thread_fn(struct sec_ts_data *ts)
 				disable_irq_nosync(ts->client->irq);
 				free_irq(ts->client->irq, ts);
 				ret = request_threaded_irq(ts->client->irq, NULL, sec_ts_irq_thread,
-						ts->plat_data->irq_type, SEC_TS_I2C_NAME, ts);
+						IRQ_FLAGS, SEC_TS_I2C_NAME, ts);
 				if (ret < 0)
 					input_err(true, &ts->client->dev, "%s: Unable to request threaded irq\n", __func__);
 
