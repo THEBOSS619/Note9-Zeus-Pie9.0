@@ -1,5 +1,7 @@
 obj-$(CONFIG_IOMMU_API) += iommu.o
+ifdef CONFIG_DEBUG_KERNEL
 obj-$(CONFIG_IOMMU_API) += iommu-traces.o
+endif
 obj-$(CONFIG_IOMMU_API) += iommu-sysfs.o
 obj-$(CONFIG_IOMMU_DMA) += dma-iommu.o
 obj-$(CONFIG_IOMMU_IO_PGTABLE) += io-pgtable.o
