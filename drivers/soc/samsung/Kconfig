@@ -181,6 +181,12 @@ config EXYNOS_SECURE_LOG
 	help
 	  Support Exynos Secure Log
 
+config STATE_NOTIFIER
+        bool "State Notifier"
+        default y
+	    help
+	    Support NAD VST Calibration
+
 config SAMSUNG_VST_CAL
 	bool "Support NAD VST Calibration"
 	default n
