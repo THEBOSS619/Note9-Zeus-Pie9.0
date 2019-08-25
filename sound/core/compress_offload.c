@@ -507,10 +507,6 @@ static int snd_compr_allocate_buffer(struct snd_compr_stream *stream,
 	unsigned int buffer_size;
 	void *buffer;
 
-	if (params->buffer.fragment_size == 0 ||
-	    params->buffer.fragments > SIZE_MAX / params->buffer.fragment_size)
-		return -EINVAL;
-
 	buffer_size = params->buffer.fragment_size * params->buffer.fragments;
 	if (stream->ops->copy) {
 		buffer = NULL;
@@ -657,10 +653,9 @@ snd_compr_set_metadata(struct snd_compr_stream *stream, unsigned long arg)
 static inline int
 snd_compr_tstamp(struct snd_compr_stream *stream, unsigned long arg)
 {
-	struct snd_compr_tstamp tstamp;
+	struct snd_compr_tstamp tstamp = {0};
 	int ret;
 
-	memset(&tstamp, 0, sizeof(tstamp));
 	ret = snd_compr_update_tstamp(stream, &tstamp);
 	if (ret == 0)
 		ret = copy_to_user((struct snd_compr_tstamp __user *)arg,
@@ -672,11 +667,10 @@ static int snd_compr_pause(struct snd_compr_stream *stream)
 {
 	int retval;
 
-	if (stream->runtime->state != SNDRV_PCM_STATE_RUNNING
-		&& stream->runtime->state != SNDRV_PCM_STATE_DRAINING)
+	if (stream->runtime->state != SNDRV_PCM_STATE_RUNNING)
 		return -EPERM;
 	retval = stream->ops->trigger(stream, SNDRV_PCM_TRIGGER_PAUSE_PUSH);
-	if (!retval && stream->runtime->state != SNDRV_PCM_STATE_DRAINING)
+	if (!retval)
 		stream->runtime->state = SNDRV_PCM_STATE_PAUSED;
 	return retval;
 }
@@ -685,11 +679,10 @@ static int snd_compr_resume(struct snd_compr_stream *stream)
 {
 	int retval;
 
-	if (stream->runtime->state != SNDRV_PCM_STATE_PAUSED
-		&& stream->runtime->state != SNDRV_PCM_STATE_DRAINING)
+	if (stream->runtime->state != SNDRV_PCM_STATE_PAUSED)
 		return -EPERM;
 	retval = stream->ops->trigger(stream, SNDRV_PCM_TRIGGER_PAUSE_RELEASE);
-	if (!retval && stream->runtime->state != SNDRV_PCM_STATE_DRAINING)
+	if (!retval)
 		stream->runtime->state = SNDRV_PCM_STATE_RUNNING;
 	return retval;
 }
