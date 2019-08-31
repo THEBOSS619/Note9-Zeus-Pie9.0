@@ -292,7 +292,7 @@ static int cpu_notifier_cb(struct notifier_block *nb,
 	}
 
 	/* CPU boost is disabled. Don't apply boost */
-	boost_freq = get_boost_freq(b, policy->cpu);
+	boost_freq = get_boost_freq(b, policy->cpu, state);
 	if (boost_freq == 0)
 		return NOTIFY_OK;
 
