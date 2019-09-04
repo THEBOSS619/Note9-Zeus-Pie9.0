@@ -232,6 +232,4 @@ ifeq (exist, $(shell [ -e ../../system/core/liblog/include/log/perflog.h ] && ec
 	obj-y				+= kperfmon/
 endif
 
-# DTS_EAGLE START
 obj-$(CONFIG_AINUR_DTS_SW) += dts_eagle/
-# DTS_EAGLE END
