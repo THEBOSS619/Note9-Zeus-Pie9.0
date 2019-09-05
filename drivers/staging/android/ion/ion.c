@@ -687,7 +687,6 @@ struct ion_handle *__ion_alloc(struct ion_client *client, size_t len,
 	int ret;
 
 	ION_EVENT_BEGIN();
-	trace_ion_alloc_start(client->name, 0, len, align, heap_id_mask, flags);
 
 	pr_debug("%s: len %zu align %zu heap_id_mask %u flags %x\n", __func__,
 		 len, align, heap_id_mask, flags);
@@ -698,9 +697,7 @@ struct ion_handle *__ion_alloc(struct ion_client *client, size_t len,
 	 * succeeded or all heaps have been tried
 	 */
 	len = PAGE_ALIGN(len);
-	if (!len) {
-		trace_ion_alloc_fail(client->name, EINVAL, len,
-				align, heap_id_mask, flags);
+	if (WARN_ON(!len)) {
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -732,14 +729,10 @@ struct ion_handle *__ion_alloc(struct ion_client *client, size_t len,
 	up_read(&dev->lock);
 
 	if (buffer == NULL) {
-		trace_ion_alloc_fail(client->name, ENODEV, len,
-				align, heap_id_mask, flags);
 		return ERR_PTR(-ENODEV);
 	}
 
 	if (IS_ERR(buffer)) {
-		trace_ion_alloc_fail(client->name, PTR_ERR(buffer),
-					len, align, heap_id_mask, flags);
 		return ERR_CAST(buffer);
 	}
 
@@ -752,8 +745,6 @@ struct ion_handle *__ion_alloc(struct ion_client *client, size_t len,
 	ion_buffer_put(buffer);
 
 	if (IS_ERR(handle)) {
-		trace_ion_alloc_fail(client->name, (unsigned long) buffer,
-					len, align, heap_id_mask, flags);
 		return handle;
 	}
 
@@ -765,8 +756,6 @@ struct ion_handle *__ion_alloc(struct ion_client *client, size_t len,
 	if (ret) {
 		ion_handle_put(client, handle);
 		handle = ERR_PTR(ret);
-		trace_ion_alloc_fail(client->name, (unsigned long ) buffer,
-					len, align, heap_id_mask, flags);
 	}
 
 	ION_EVENT_ALLOC(buffer, ION_EVENT_DONE());
