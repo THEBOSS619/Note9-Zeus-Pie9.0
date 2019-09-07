@@ -2628,6 +2628,7 @@ extern int filemap_check_errors(struct address_space *mapping);
 extern int vfs_fsync_range(struct file *file, loff_t start, loff_t end,
 			   int datasync);
 extern int vfs_fsync(struct file *file, int datasync);
+extern bool fsync_enabled;
 
 /*
  * Sync the bytes written if this was a synchronous write.  Expect ki_pos
@@ -2636,6 +2637,9 @@ extern int vfs_fsync(struct file *file, int datasync);
  */
 static inline ssize_t generic_write_sync(struct kiocb *iocb, ssize_t count)
 {
+	if (!fsync_enabled)
+		return 0;
+
 	if (iocb->ki_flags & IOCB_DSYNC) {
 		int ret = vfs_fsync_range(iocb->ki_filp,
 				iocb->ki_pos - count, iocb->ki_pos - 1,
