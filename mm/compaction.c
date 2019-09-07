@@ -19,6 +19,9 @@
 #include <linux/kasan.h>
 #include <linux/kthread.h>
 #include <linux/freezer.h>
+#ifdef CONFIG_STATE_NOTIFIER
+#include <linux/state_notifier.h>
+#endif
 #include <linux/page_owner.h>
 #include <linux/fb.h>
 #include <linux/moduleparam.h>
