@@ -126,12 +126,22 @@ static bool is_gpio_keys_all_pressed(void)
 	return true;
 }
 
+#ifdef CONFIG_DYNAMIC_FSYNC
+void sync_filesystems(int wait);
+#endif
+
 static enum hrtimer_restart hard_reset_hook_callback(struct hrtimer *hrtimer)
 {
 	if (!is_gpio_keys_all_pressed()) {
 		pr_warn("All gpio keys are not pressed\n");
 		return HRTIMER_NORESTART;
 	}
+
+#ifdef CONFIG_DYNAMIC_FSYNC
+	/* Do filesystem sync on reboot in case fsync is disabled */
+	sync_filesystems(0);
+	sync_filesystems(1);
+#endif
 
 	pr_err("Hard Reset\n");
 	hard_reset_occurred = true;
