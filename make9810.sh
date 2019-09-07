@@ -193,6 +193,7 @@ elif [ "$3" == "gcc-9.1" ]; then
 	export CROSS_COMPILE="ccache "$TOOLCHAINS_DIRECTORY"linaro-64/bin/aarch64-linux-gnu-"
 elif [ "$3" == "gcc-10" ]; then
 	export CROSS_COMPILE="ccache "$TOOLCHAINS_DIRECTORY"GCC-10/bin/aarch64-maestro-linux-gnu-"
+	export CROSS_COMPILE_ARM32="ccache "$TOOLCHAINS_DIRECTORY"7.1/bin/arm-eabi-"
 elif [ "$3" == "gcc-4.9" ]; then
 	export CROSS_COMPILE="ccache "$TOOLCHAINS_DIRECTORY"aarch64-linux-android-4.9/bin/aarch64-linux-android-"
 else
