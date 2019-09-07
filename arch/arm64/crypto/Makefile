@@ -39,10 +39,6 @@ speck-neon-y := speck-neon-core.o speck-neon-glue.o
 AFLAGS_aes-ce.o		:= -DINTERLEAVE=4
 AFLAGS_aes-neon.o	:= -DINTERLEAVE=4
 
-obj-$(CONFIG_CRYPTO_CRC32_ARM64) += crc32-arm64.o
-
-CFLAGS_crc32-arm64.o	:= -mcpu=generic+crc
-
 $(obj)/aes-glue-%.o: $(src)/aes-glue.c FORCE
 	$(call if_changed_rule,cc_o_c)
 
