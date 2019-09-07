@@ -24,7 +24,6 @@
 #include <linux/moduleparam.h>
 #include <linux/time.h>
 #include <linux/workqueue.h>
-#include <linux/psi.h>
 #include "internal.h"
 
 #ifdef CONFIG_COMPACTION
