@@ -8,7 +8,7 @@
  */
 
 /* This version must match the gator daemon version */
-#define PROTOCOL_VERSION    690
+#define PROTOCOL_VERSION    700
 static unsigned long gator_protocol_version = PROTOCOL_VERSION;
 
 #include <linux/version.h>
@@ -1388,12 +1388,13 @@ GATOR_TRACEPOINTS;
 int gator_new_tracepoint_module(struct notifier_block * nb, unsigned long action, void * data)
 {
     struct tp_module * tp_mod = (struct tp_module *) data;
-#ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
-    struct tracepoint * const * begin = offset_to_ptr(tp_mod->mod->tracepoints_ptrs);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
+    tracepoint_ptr_t * begin = tp_mod->mod->tracepoints_ptrs;
+    tracepoint_ptr_t * end = tp_mod->mod->tracepoints_ptrs + tp_mod->mod->num_tracepoints;
 #else
     struct tracepoint * const * begin = tp_mod->mod->tracepoints_ptrs;
+    struct tracepoint * const * end = tp_mod->mod->tracepoints_ptrs + tp_mod->mod->num_tracepoints;
 #endif
-    struct tracepoint * const * end = begin + tp_mod->mod->num_tracepoints;
 
     pr_debug("gator: new tracepoint module registered %s\n", tp_mod->mod->name);
 
