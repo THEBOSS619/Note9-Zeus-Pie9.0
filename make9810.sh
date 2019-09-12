@@ -26,7 +26,7 @@ UPSTREAM=4\.9\.169
 PIE_OLD_VERSION=2\.0\.10
 PIE_VERSION=2\.0\.11
 OREO_OLD_VERSION=1\.2\.16
-OREO_VERSION=2\.3\.91
+OREO_VERSION=2\.3\.92
 
 # Default Device
 # Used as a backup when no valid device is defined
