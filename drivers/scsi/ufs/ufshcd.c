@@ -5784,8 +5784,8 @@ static int ufshcd_eh_device_reset_handler(struct scsi_cmnd *cmd)
 out:
 	if (!err) {
 		dev_info(hba->dev, "%s: LU reset succeeded\n", __func__);
-		schedule_delayed_work(&hba->ufshpb_init_work,
-					msecs_to_jiffies(10));
+		queue_delayed_work(system_power_efficient_wq, 
+			&hba->ufshpb_init_work,	msecs_to_jiffies(10));
 		err = SUCCESS;
 	} else {
 		dev_err(hba->dev, "%s: failed with err %d\n", __func__, err);
@@ -6648,8 +6648,8 @@ retry:
 			ret = 0;
 		}
 
-		schedule_delayed_work(&hba->ufshpb_init_work,
-						msecs_to_jiffies(0));
+		queue_delayed_work(system_power_efficient_wq, 
+			&hba->ufshpb_init_work, msecs_to_jiffies(0));
 		pm_runtime_put_sync(hba->dev);
 	}
 
