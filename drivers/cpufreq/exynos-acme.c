@@ -1066,7 +1066,7 @@ static int init_dm(struct exynos_cpufreq_domain *domain,
 	return register_exynos_dm_freq_scaler(domain->dm_type, dm_scaler);
 }
 
-static unsigned long arg_cpu_max_c1 = 1950000;
+static unsigned long arg_cpu_max_c1 = 2002000;
 
 static int __init cpufreq_read_cpu_max_c1(char *cpu_max_c1)
 {
