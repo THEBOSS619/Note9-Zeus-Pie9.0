@@ -982,6 +982,7 @@ static struct notifier_block exynos_tmu_pm_notifier = {
 };
 #endif
 
+#ifdef CONFIG_EXYNOS_HOTPLUG
 static int thermal_cpu_hotplug_handler(struct notifier_block *b, unsigned long val, void *v)
 {
 	struct thermal_zone_device *tz;
@@ -1001,6 +1002,7 @@ static int thermal_cpu_hotplug_handler(struct notifier_block *b, unsigned long v
 static struct notifier_block thermal_cpu_hotplug_notifier = {
 	.notifier_call = thermal_cpu_hotplug_handler,
 };
+#endif
 
 static const struct of_device_id exynos_tmu_match[] = {
 	{ .compatible = "samsung,exynos9810-tmu", },
@@ -1560,7 +1562,9 @@ static int exynos_tmu_probe(struct platform_device *pdev)
 		pm_qos_add_request(&thermal_cpu_limit_request,
 					PM_QOS_CLUSTER1_FREQ_MAX,
 					PM_QOS_CLUSTER1_FREQ_MAX_DEFAULT_VALUE);
+#ifdef CONFIG_EXYNOS_HOTPLUG
 		exynos_cpuhotplug_register_notifier(&thermal_cpu_hotplug_notifier, 0);
+#endif
 	}
 
 	data->tzd = thermal_zone_of_sensor_register(&pdev->dev, 0, data,
