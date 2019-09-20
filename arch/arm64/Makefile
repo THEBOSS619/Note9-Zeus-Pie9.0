@@ -97,6 +97,27 @@ KBUILD_CFLAGS	+= $(call cc-option, -mpc-relative-literal-loads)
 KBUILD_CFLAGS	+= -fno-pic
 KBUILD_AFLAGS	+= $(lseinstr) $(vdso32)
 
+KBUILD_CFLAGS	+= $(call cc-option,-mabi=lp64)
+KBUILD_AFLAGS	+= $(call cc-option,-mabi=lp64)
+
+ARM64_OPTIMIZATION_FLAGS := -march=armv8.2-a+crypto+fp16+crc
+KBUILD_CFLAGS	+= $(call cc-option, $(ARM64_OPTIMIZATION_FLAGS),)
+ifeq ($(CONFIG_LTO_CLANG),y)
+LDFLAGS += $(call ld-option, $(ARM64_OPTIMIZATION_FLAGS),)
+endif
+ifeq ($(CONFIG_SOC_EXYNOS9810), y)
+EXYNOS9810_OPTIMIZATION_FLAGS := -mcpu=exynos-m3+crypto+fp16+crc -mtune=cortex-a55+crypto+fp16+crc
+KBUILD_CFLAGS	+= $(call cc-option, $(EXYNOS9810_OPTIMIZATION_FLAGS),)
+ifeq ($(CONFIG_LTO_CLANG),y)
+LDFLAGS += $(call ld-option, $(EXYNOS9810_OPTIMIZATION_FLAGS),)
+endif
+
+ifeq ($(cc-name),clang)
+KBUILD_CFLAGS	+= -DCONFIG_ARCH_SUPPORTS_INT128
+else
+KBUILD_CFLAGS	+= $(call cc-ifversion, -ge, 0500, -DCONFIG_ARCH_SUPPORTS_INT128)
+endif
+
 ifeq ($(CONFIG_CPU_BIG_ENDIAN), y)
 KBUILD_CPPFLAGS	+= -mbig-endian
 AS		+= -EB
