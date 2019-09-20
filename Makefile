@@ -767,7 +767,8 @@ else
 ifdef CONFIG_PROFILE_ALL_BRANCHES
 KBUILD_CFLAGS	+= -O2 $(call cc-disable-warning,maybe-uninitialized,)
 else
-KBUILD_CFLAGS   += -O2 $(call cc-disable-warning,maybe-uninitialized,)
+KBUILD_CFLAGS   += -O2 -falign-functions=16 -falign-loops=16 -fno-signed-zeros -freciprocal-math -ffp-contract=fast $(call cc-disable-warning,maybe-uninitialized,)
+KBUILD_CFLAGS   += -mtune=cortex-a55 -mcpu=cortex-a55+crypto+fp16+crc -ffast-math -funsafe-math-optimizations -floop-nest-optimize -fgraphite-identity -ftree-loop-distribution
 endif
 endif
 
