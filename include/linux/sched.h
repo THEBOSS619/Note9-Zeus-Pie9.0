@@ -368,6 +368,16 @@ static inline void nohz_balance_enter_idle(int cpu) { }
 static inline void set_cpu_sd_state_idle(void) { }
 #endif
 
+/* Global boosting */
+struct global_boost_request {
+	struct plist_node node;
+	char *name;
+	bool active;
+};
+
+extern int global_boost(void);
+extern void global_boost_update_request(struct global_boost_request *req, u32 new_value);
+
 /*
  * Only dump TASK_* tasks. (0 for all tasks)
  */

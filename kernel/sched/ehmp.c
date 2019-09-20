@@ -135,7 +135,6 @@ check_cpu_capacity(struct rq *rq, struct sched_domain *sd)
 				(rq->cpu_capacity_orig * 100));
 }
 
-unsigned long global_boost(void);
 int exynos_need_active_balance(enum cpu_idle_type idle, struct sched_domain *sd,
 					int src_cpu, int dst_cpu)
 {
@@ -470,16 +469,6 @@ static ssize_t store_global_boost(struct kobject *kobj,
 static struct kobj_attribute global_boost_attr =
 __ATTR(global_boost, 0644, show_global_boost, store_global_boost);
 
-#define BOOT_BOOST_DURATION 40000000	/* microseconds */
-unsigned long global_boost(void)
-{
-	u64 now = ktime_to_us(ktime_get());
-
-	if (now < BOOT_BOOST_DURATION)
-		return gb_max_value;
-
-	return gb_value;
-}
 
 int find_second_max_cap(void)
 {

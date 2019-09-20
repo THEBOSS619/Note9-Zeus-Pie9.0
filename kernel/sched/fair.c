@@ -6293,7 +6293,8 @@ schedtune_cpu_margin(unsigned long util, int cpu)
 static inline long
 schedtune_task_margin(struct task_struct *p)
 {
-	int boost = schedtune_task_boost(p);
+	int boost = global_boost() > schedtune_task_boost(p) ?
+		    global_boost() : schedtune_task_boost(p);
 	unsigned long cap = capacity_orig_of(task_cpu(p));
 	unsigned long util;
 	long margin;
@@ -7285,10 +7286,10 @@ static int select_energy_cpu_brute(struct task_struct *p, int prev_cpu, int sync
 
 	rcu_read_lock();
 #ifdef CONFIG_CGROUP_SCHEDTUNE
-	boosted = schedtune_task_boost(p) > 0;
+	boosted = global_boost() ? true : schedtune_task_boost(p) > 0;
 	prefer_idle = schedtune_prefer_idle(p) > 0;
 #else
-	boosted = get_sysctl_sched_cfs_boost() > 0;
+	boosted = global_boost() ? true : get_sysctl_sched_cfs_boost() > 0;
 	prefer_idle = 0;
 #endif
 
@@ -7359,6 +7360,9 @@ unlock:
 	rcu_read_unlock();
 	return target_cpu;
 }
+
+static inline bool nohz_kick_needed(struct rq *rq);
+static void nohz_balancer_kick(void);
 
 /*
  * select_task_rq_fair: Select target runqueue for the waking task in domains
@@ -7440,6 +7444,11 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
 		new_cpu = find_idlest_cpu(sd, p, cpu, prev_cpu, sd_flag);
 	}
 	rcu_read_unlock();
+
+#ifdef CONFIG_NO_HZ_COMMON
+	if (nohz_kick_needed(cpu_rq(new_cpu)))
+		nohz_balancer_kick();
+#endif
 
 	return new_cpu;
 }
