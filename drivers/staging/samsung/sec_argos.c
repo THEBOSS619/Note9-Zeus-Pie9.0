@@ -27,6 +27,11 @@
 #include <linux/interrupt.h>
 #include <linux/sec_argos.h>
 
+static struct global_boost_request gb_req_user =
+{
+	.name = "argos_boost",
+};
+
 #ifdef CONFIG_SCHED_EHMP
 #include <linux/ehmp.h>
 static struct gb_qos_request gb_req = {
@@ -389,7 +394,7 @@ int argos_hmpboost_apply(int dev_num, bool enable)
 			/* set global boost */
 			gb_qos_update_request(&gb_req, 100);
 #elif defined(CONFIG_SCHED_HMP)
-			set_hmp_boost(true);
+			global_boost_update_request(&gb_req_user, 100);
 #endif
 			*hmpboost_enable = true;
 			pr_info("%s: hmp boost enable [%d]\n", __func__, dev_num);
@@ -401,7 +406,7 @@ int argos_hmpboost_apply(int dev_num, bool enable)
 			/* unset global boost */
 			gb_qos_update_request(&gb_req, 0);
 #elif defined(CONFIG_SCHED_HMP)
-			set_hmp_boost(false);
+			global_boost_update_request(&gb_req_user, 0);
 #endif
 			*hmpboost_enable = false;
 			pr_info("%s: hmp boost disable [%d]\n", __func__, dev_num);

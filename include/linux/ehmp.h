@@ -34,7 +34,6 @@ extern void exynos_init_entity_util_avg(struct sched_entity *se);
 extern int exynos_need_active_balance(enum cpu_idle_type idle,
 		struct sched_domain *sd, int src_cpu, int dst_cpu);
 
-extern unsigned long global_boost(void);
 extern int find_second_max_cap(void);
 
 extern int exynos_select_cpu(struct task_struct *p, int prev_cpu,
