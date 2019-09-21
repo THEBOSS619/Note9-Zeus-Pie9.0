@@ -1246,6 +1246,7 @@ schedtune_boostgroup_init(struct schedtune *st)
 {
 	struct boost_groups *bg;
 	int cpu;
+	int idx;
 
 	/* Keep track of allocated boost groups */
 	allocated_group[st->idx] = st;

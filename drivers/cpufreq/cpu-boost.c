@@ -44,13 +44,17 @@ enum input_boost_type {
 static DEFINE_PER_CPU(struct cpu_sync, sync_info);
 static struct kthread_work input_boost_work;
 
-static unsigned int kthread_work powerkey_input_boost_work = 1;
+static struct kthread_work powerkey_input_boost_work;
 static unsigned int input_boost_enabled = 1;
 module_param(input_boost_enabled, uint, 0644);
-module_param(kthread_work powerkey_input_boost_work, uint, 0644);
 
 static unsigned int input_boost_ms = 40;
 module_param(input_boost_ms, uint, 0644);
+
+static bool sched_boost_on_input;
+module_param(sched_boost_on_input, bool, 0644);
+
+static bool sched_boost_active;
 
 static unsigned int powerkey_input_boost_ms = 1200;
 module_param(powerkey_input_boost_ms, uint, 0644);
@@ -61,7 +65,10 @@ static bool stune_boost_active;
 static int boost_slot;
 #endif /* CONFIG_DYNAMIC_STUNE_BOOST */
 
-static struct delayed_work input_boost_rem;
+static bool sched_boost_on_powerkey_input = true;
+module_param(sched_boost_on_powerkey_input, bool, 0644);
+
+static struct kthread_delayed_work input_boost_rem;
 static u64 last_input_time;
 
 static struct kthread_worker cpu_boost_worker;
@@ -218,7 +225,7 @@ static void update_policy_online(void)
 	put_online_cpus();
 }
 
-static void do_input_boost_rem(struct work_struct *work)
+static void do_input_boost_rem(struct kthread_work *work)
 {
 	unsigned int i;
 	struct cpu_sync *i_sync_info;
@@ -247,7 +254,7 @@ static void do_input_boost(struct kthread_work *work)
 	unsigned int i, ret;
 	struct cpu_sync *i_sync_info;
 
-	cancel_delayed_work_sync(&input_boost_rem);
+	kthread_cancel_delayed_work_sync(&input_boost_rem);
 
 	if (stune_boost_active) {
 		reset_stune_boost("top-app", boost_slot);
@@ -264,19 +271,15 @@ static void do_input_boost(struct kthread_work *work)
 	/* Update policies for all online CPUs */
 	update_policy_online();
 
-	schedule_delayed_work(&input_boost_rem, msecs_to_jiffies(input_boost_ms));
+	kthread_queue_delayed_work(&cpu_boost_worker, &input_boost_rem, msecs_to_jiffies(input_boost_ms));
 }
 
-static void do_powerkey_input_boost(struct work_struct *work)
+static void do_powerkey_input_boost(struct kthread_work *work)
 {
 
 	unsigned int i, ret;
 	struct cpu_sync *i_sync_info;
-	cancel_delayed_work_sync(&input_boost_rem);
-	if (sched_boost_active) {
-		sched_set_boost(0);
-		sched_boost_active = false;
-	}
+	kthread_cancel_delayed_work_sync(&input_boost_rem);
 
 	/* Set the powerkey_input_boost_min for all CPUs in the system */
 	pr_debug("Setting powerkey input boost min for all CPUs\n");
@@ -288,15 +291,6 @@ static void do_powerkey_input_boost(struct work_struct *work)
 	/* Update policies for all online CPUs */
 	update_policy_online();
 
-	/* Enable scheduler boost to migrate tasks to big cluster */
-	if (sched_boost_on_powerkey_input) {
-		ret = sched_set_boost(1);
-		if (ret)
-			pr_err("cpu-boost: HMP boost enable failed\n");
-		else
-			sched_boost_active = true;
-	}
-
 #ifdef CONFIG_DYNAMIC_STUNE_BOOST
 	/* Set dynamic stune boost value */
 	ret = do_stune_boost("top-app", dynamic_stune_boost, &boost_slot);
@@ -304,7 +298,7 @@ static void do_powerkey_input_boost(struct work_struct *work)
 		stune_boost_active = true;
 #endif /* CONFIG_DYNAMIC_STUNE_BOOST */
 
-	queue_kthread_work(&cpu_boost_worker, &input_boost_rem,
+	kthread_queue_delayed_work(&cpu_boost_worker, &input_boost_rem,
 					msecs_to_jiffies(powerkey_input_boost_ms));
 }
 
@@ -313,7 +307,7 @@ static void cpuboost_input_event(struct input_handle *handle,
 {
 	u64 now;
 
-	if (!input_boost_enabled || gaming_mode)
+	if (!input_boost_enabled || game_option)
 		return;
 
 	now = ktime_to_us(ktime_get());
@@ -324,9 +318,9 @@ static void cpuboost_input_event(struct input_handle *handle,
 		return;
 
 	if (type == EV_KEY && code == KEY_POWER) {
-		queue_kthread_work(&cpu_boost_worker, &powerkey_input_boost_work);
+		kthread_queue_work(&cpu_boost_worker, &powerkey_input_boost_work);
 	} else {
-		queue_kthread_work(&cpu_boost_worker, &input_boost_work);
+		kthread_queue_work(&cpu_boost_worker, &input_boost_work);
 	}
 	last_input_time = ktime_to_us(ktime_get());
 }
@@ -420,7 +414,7 @@ static int cpu_boost_init(void)
 		cpumask_set_cpu(i, &sys_bg_mask);
 	}
 
-	init_kthread_worker(&cpu_boost_worker);
+	kthread_init_worker(&cpu_boost_worker);
 	cpu_boost_worker_thread = kthread_create(kthread_worker_fn,
 		&cpu_boost_worker, "cpu_boost_worker_thread");
 	if (IS_ERR(cpu_boost_worker_thread)) {
@@ -438,9 +432,9 @@ static int cpu_boost_init(void)
 	/* Wake it up! */
 	wake_up_process(cpu_boost_worker_thread);
 
-	init_kthread_work(&input_boost_work, do_input_boost);
-	init_kthread_work(&powerkey_input_boost_work, do_powerkey_input_boost);
-	INIT_DELAYED_WORK(&input_boost_rem, do_input_boost_rem);
+	kthread_init_work(&input_boost_work, do_input_boost);
+	kthread_init_work(&powerkey_input_boost_work, do_powerkey_input_boost);
+	kthread_init_delayed_work(&input_boost_rem, do_input_boost_rem);
 
 	for_each_possible_cpu(cpu) {
 		s = &per_cpu(sync_info, cpu);
