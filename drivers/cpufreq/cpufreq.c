@@ -29,6 +29,7 @@
 #include <linux/suspend.h>
 #include <linux/syscore_ops.h>
 #include <linux/tick.h>
+#include <linux/binfmts.h>
 #ifdef CONFIG_SMP
 #include <linux/sched.h>
 #endif
@@ -754,7 +755,7 @@ static ssize_t show_cpuinfo_cur_freq(struct cpufreq_policy *policy,
  */
 static ssize_t show_scaling_governor(struct cpufreq_policy *policy, char *buf)
 {
-	if (tsk_is_booster(current))
+	if (task_is_booster(current))
 		return sprintf(buf, "schedutil\n");
 	else if (policy->policy == CPUFREQ_POLICY_POWERSAVE)
 		return sprintf(buf, "powersave\n");
