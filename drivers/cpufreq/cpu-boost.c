@@ -26,9 +26,6 @@
 #include <linux/kthread.h>
 #include <linux/sched/rt.h>
 
-/* Gaming control */
-#include <linux/gaming_control.h>
-
 struct cpu_sync {
 	int cpu;
 	unsigned int input_boost_min;
@@ -307,7 +304,7 @@ static void cpuboost_input_event(struct input_handle *handle,
 {
 	u64 now;
 
-	if (!input_boost_enabled || game_option)
+	if (!input_boost_enabled)
 		return;
 
 	now = ktime_to_us(ktime_get());
