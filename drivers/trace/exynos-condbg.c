@@ -2066,13 +2066,13 @@ static int __init ecd_setup(char *str)
 		option = strsep(&str, " ");
 	}
 
-	if (console && !strncmp(console, "disable", strlen("disable"))) {
+	if (console && !strncmp(console, "disable", DSTRLEN("disable"))) {
 		initial_no_firmware = true;
 		goto out;
 	}
-	if (console && !strncmp(console, "console", strlen("console")))
+	if (console && !strncmp(console, "console", DSTRLEN("console")))
 		initial_console_enable = true;
-	if (option && strncmp(option, "no_firmare", strlen("no_firmare")))
+	if (option && strncmp(option, "no_firmare", DSTRLEN("no_firmare")))
 		initial_no_firmware = true;
 
 	if (!initial_no_firmware) {

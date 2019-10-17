@@ -115,7 +115,7 @@ static int perf_event__get_comm_ids(pid_t pid, char *comm, size_t len,
 	ppids = strstr(bf, "PPid:");
 
 	if (name) {
-		name += 5;  /* strlen("Name:") */
+		name += 5;  /* DSTRLEN("Name:") */
 
 		while (*name && isspace(*name))
 			++name;
@@ -134,14 +134,14 @@ static int perf_event__get_comm_ids(pid_t pid, char *comm, size_t len,
 	}
 
 	if (tgids) {
-		tgids += 5;  /* strlen("Tgid:") */
+		tgids += 5;  /* DSTRLEN("Tgid:") */
 		*tgid = atoi(tgids);
 	} else {
 		pr_debug("Tgid: string not found for pid %d\n", pid);
 	}
 
 	if (ppids) {
-		ppids += 5;  /* strlen("PPid:") */
+		ppids += 5;  /* DSTRLEN("PPid:") */
 		*ppid = atoi(ppids);
 	} else {
 		pr_debug("PPid: string not found for pid %d\n", pid);

@@ -1442,7 +1442,7 @@ ncm_bind(struct usb_configuration *c, struct usb_function *f)
 	status = gether_get_host_addr_cdc(ncm_opts->net, ncm->ethaddr,
 				      sizeof(ncm->ethaddr));
 
-	if (status < 12) { /* strlen("01234567890a") */
+	if (status < 12) { /* DSTRLEN("01234567890a") */
 		status = -EINVAL;
 		goto netdev_cleanup;
 	}

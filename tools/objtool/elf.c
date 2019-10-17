@@ -566,7 +566,7 @@ struct section *elf_create_rela_section(struct elf *elf, struct section *base)
 	char *relaname;
 	struct section *sec;
 
-	relaname = malloc(strlen(base->name) + strlen(".rela") + 1);
+	relaname = malloc(strlen(base->name) + DSTRLEN(".rela") + 1);
 	if (!relaname) {
 		perror("malloc");
 		return NULL;

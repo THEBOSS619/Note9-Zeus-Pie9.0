@@ -5895,7 +5895,7 @@ dhd_prot_wlioctl_intercept(dhd_pub_t *dhd, wl_ioctl_t * ioc, void * buf)
 	if (ioc->cmd == WLC_SET_VAR && buf != NULL && !strcmp(buf, "pcie_bus_tput")) {
 		pcie_bus_tput_params_t *tput_params;
 
-		slen = strlen("pcie_bus_tput") + 1;
+		slen = DSTRLEN("pcie_bus_tput") + 1;
 		tput_params = (pcie_bus_tput_params_t*)((char *)buf + slen);
 		bcopy(&prot->host_bus_throughput_buf.pa, &tput_params->host_buf_addr,
 			sizeof(tput_params->host_buf_addr));
@@ -5915,7 +5915,7 @@ dhd_prot_wl_ioctl_ret_intercept(dhd_pub_t *dhd, wl_ioctl_t * ioc, void * buf,
 		if (!strcmp(buf, "wme_dp")) {
 			int slen, val = 0;
 
-			slen = strlen("wme_dp") + 1;
+			slen = DSTRLEN("wme_dp") + 1;
 			if (len >= (int)(slen + sizeof(int)))
 				bcopy(((char *)buf + slen), &val, sizeof(int));
 			dhd->wme_dp = (uint8) ltoh32(val);
@@ -6351,12 +6351,12 @@ dhd_msgbuf_query_ioctl(dhd_pub_t *dhd, int ifidx, uint cmd, void *buf, uint len,
 		/* Respond "bcmerror" and "bcmerrorstr" with local cache */
 		copylen = MIN(len, BCME_STRLEN);
 
-		if ((len >= strlen("bcmerrorstr")) &&
+		if ((len >= DSTRLEN("bcmerrorstr")) &&
 			(!strcmp((char *)buf, "bcmerrorstr"))) {
 			strncpy((char *)buf, bcmerrorstr(dhd->dongle_error), copylen);
 			*(uint8 *)((uint8 *)buf + (copylen - 1)) = '\0';
 			goto done;
-		} else if ((len >= strlen("bcmerror")) &&
+		} else if ((len >= DSTRLEN("bcmerror")) &&
 			!strcmp((char *)buf, "bcmerror")) {
 			*(uint32 *)(uint32 *)buf = dhd->dongle_error;
 			goto done;

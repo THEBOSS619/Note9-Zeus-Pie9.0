@@ -2374,7 +2374,7 @@ wl_cfgnan_send_stop_event(nan_event_data_t *nan_event_data, struct bcm_cfg80211 
 	memset(nan_event_data, 0, NAN_IOCTL_BUF_SIZE);
 	nan_event_data->status = NAN_STATUS_SUCCESS;
 	memcpy(nan_event_data->nan_reason, "NAN_STATUS_SUCCESS",
-			strlen("NAN_STATUS_SUCCESS"));
+			DSTRLEN("NAN_STATUS_SUCCESS"));
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(3, 13, 0)) || defined(WL_VENDOR_EXT_SUPPORT)
 	ret = wl_cfgvendor_send_nan_event(cfg->wdev->wiphy, bcmcfg_to_prmry_ndev(cfg),
 			GOOGLE_NAN_EVENT_DISABLED, nan_event_data);
@@ -5336,11 +5336,11 @@ wl_cfgnan_notify_nan_status(struct bcm_cfg80211 *cfg,
 				pev->reason == NAN_TERM_REASON_COUNT_REACHED) {
 			nan_event_data->status = NAN_STATUS_SUCCESS;
 			memcpy(nan_event_data->nan_reason, "NAN_STATUS_SUCCESS",
-				strlen("NAN_STATUS_SUCCESS"));
+				DSTRLEN("NAN_STATUS_SUCCESS"));
 		} else {
 			nan_event_data->status = NAN_STATUS_INTERNAL_FAILURE;
 			memcpy(nan_event_data->nan_reason, "NAN_STATUS_INTERNAL_FAILURE",
-				strlen("NAN_STATUS_INTERNAL_FAILURE"));
+				DSTRLEN("NAN_STATUS_INTERNAL_FAILURE"));
 		}
 
 		if (pev->svctype == NAN_SC_SUBSCRIBE) {
@@ -5372,7 +5372,7 @@ wl_cfgnan_notify_nan_status(struct bcm_cfg80211 *cfg,
 				txs->type, txs->host_seq));
 			nan_event_data->status = NAN_STATUS_SUCCESS;
 			memcpy(nan_event_data->nan_reason, "NAN_STATUS_SUCCESS",
-				strlen("NAN_STATUS_SUCCESS"));
+				DSTRLEN("NAN_STATUS_SUCCESS"));
 		} else {
 			/* TODO : populate status based on reason codes
 			For now adding it as no ACK, so that app/framework can retry
@@ -5381,7 +5381,7 @@ wl_cfgnan_notify_nan_status(struct bcm_cfg80211 *cfg,
 				txs->type, txs->status, txs->host_seq));
 			nan_event_data->status = NAN_STATUS_NO_OTA_ACK;
 			memcpy(nan_event_data->nan_reason, "NAN_STATUS_NO_OTA_ACK",
-				strlen("NAN_STATUS_NO_OTA_ACK"));
+				DSTRLEN("NAN_STATUS_NO_OTA_ACK"));
 		}
 		nan_event_data->reason = txs->reason_code;
 		nan_event_data->token = txs->host_seq;

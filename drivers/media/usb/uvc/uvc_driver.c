@@ -2202,8 +2202,8 @@ static int uvc_clock_param_get(char *buffer, const struct kernel_param *kp)
 
 static int uvc_clock_param_set(const char *val, const struct kernel_param *kp)
 {
-	if (strncasecmp(val, "clock_", strlen("clock_")) == 0)
-		val += strlen("clock_");
+	if (strncasecmp(val, "clock_", DSTRLEN("clock_")) == 0)
+		val += DSTRLEN("clock_");
 
 	if (strcasecmp(val, "monotonic") == 0)
 		uvc_clock_param = CLOCK_MONOTONIC;

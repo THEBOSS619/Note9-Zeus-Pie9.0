@@ -1052,7 +1052,7 @@ dhd_wl_ioctl(dhd_pub_t *dhd_pub, int ifidx, wl_ioctl_t *ioc, void *buf, int len)
 						bcopy((msg + slen), &lval, min_len);
 					}
 					if (!strncmp(msg, "cur_etheraddr",
-						strlen("cur_etheraddr"))) {
+						DSTRLEN("cur_etheraddr"))) {
 						lval = 0;
 					}
 				}
@@ -1347,7 +1347,7 @@ dhd_flow_ring_debug(dhd_pub_t *dhd, char *msg, uint msglen)
 		uint8 sa[ETHER_ADDR_LEN], da[ETHER_ADDR_LEN];
 		BCM_REFERENCE(sa);
 		BCM_REFERENCE(da);
-		msg = msg + strlen("create") + 1;
+		msg = msg + DSTRLEN("create") + 1;
 		/* fill ethernet source address */
 		for (i = 0; i < ETHER_ADDR_LEN; i++) {
 			sa[i] = (uint8)bcm_strtoul(msg, &end_ptr, 16);
@@ -1401,7 +1401,7 @@ dhd_flow_ring_debug(dhd_pub_t *dhd, char *msg, uint msglen)
 		return BCME_OK;
 
 	} else if (cmd && !strcmp(msg, "delete")) {
-		msg = msg + strlen("delete") + 1;
+		msg = msg + DSTRLEN("delete") + 1;
 		/* parse flowid */
 		flowid = (uint16)bcm_strtoul(msg, &end_ptr, 10);
 		if (*end_ptr != '\0') {

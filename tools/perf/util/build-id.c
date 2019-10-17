@@ -182,7 +182,7 @@ char *build_id_cache__origname(const char *sbuild_id)
 	char *linkname;
 	char buf[PATH_MAX];
 	char *ret = NULL, *p;
-	size_t offs = 5;	/* == strlen("../..") */
+	size_t offs = 5;	/* == DSTRLEN("../..") */
 	ssize_t len;
 
 	linkname = build_id_cache__linkname(sbuild_id, NULL, 0);

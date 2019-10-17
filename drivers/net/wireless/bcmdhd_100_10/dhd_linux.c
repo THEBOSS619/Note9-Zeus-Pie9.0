@@ -3586,7 +3586,7 @@ _dhd_set_multicast_list(dhd_info_t *dhd, int ifidx)
 
 	strncpy(bufp, "mcast_list", buflen - 1);
 	bufp[buflen - 1] = '\0';
-	bufp += strlen("mcast_list") + 1;
+	bufp += DSTRLEN("mcast_list") + 1;
 
 	cnt = htol32(cnt);
 	memcpy(bufp, &cnt, sizeof(cnt));
@@ -11976,7 +11976,7 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 		if ((ver_temp_buf = bcmstrstr(buf, "Data:")) == NULL) {
 			DHD_ERROR(("Couldn't find \"Data:\"\n"));
 		} else {
-			ptr = (ver_temp_buf + strlen("Data:"));
+			ptr = (ver_temp_buf + DSTRLEN("Data:"));
 			if ((ver_temp_buf = bcmstrtok(&ptr, "\n", 0)) == NULL) {
 				DHD_ERROR(("Couldn't find New line character\n"));
 			} else {
@@ -20484,7 +20484,7 @@ dhd_set_blob_support(dhd_pub_t *dhdp, char *fw_path)
 		DHD_ERROR(("%s: ----- blob file exists (%s)-----\n", __FUNCTION__, filepath));
 		dhdp->is_blob = TRUE;
 #if defined(CONCATE_BLOB)
-		strncat(fw_path, "_blob", strlen("_blob"));
+		strncat(fw_path, "_blob", DSTRLEN("_blob"));
 #else
 		BCM_REFERENCE(fw_path);
 #endif /* SKIP_CONCATE_BLOB */

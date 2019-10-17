@@ -85,7 +85,7 @@ static __init int append_memory(void *fdt)
 	/* allow the user to override the usable memory */
 	var = strstr(arcs_cmdline, "memsize=");
 	if (var)
-		memsize = memparse(var + strlen("memsize="), NULL);
+		memsize = memparse(var + DSTRLEN("memsize="), NULL);
 
 	/* if the user says there's more RAM than we thought, believe them */
 	phys_memsize = max_t(unsigned long, phys_memsize, memsize);

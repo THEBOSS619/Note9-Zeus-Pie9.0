@@ -184,7 +184,7 @@ more:
 	/* Check if there was a partial line. */
 	if (last_i < size) {
 		printk_nmi_flush_seq_line(s, last_i, size - 1);
-		printk_nmi_flush_line("\n", strlen("\n"));
+		printk_nmi_flush_line("\n", DSTRLEN("\n"));
 	}
 
 	/*

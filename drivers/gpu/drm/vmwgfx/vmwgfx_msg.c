@@ -338,7 +338,7 @@ int vmw_host_get_guestinfo(const char *guest_info_param,
 	if (!guest_info_param || !length)
 		return -EINVAL;
 
-	msg_len = strlen(guest_info_param) + strlen("info-get ") + 1;
+	msg_len = strlen(guest_info_param) + DSTRLEN("info-get ") + 1;
 	msg = kzalloc(msg_len, GFP_KERNEL);
 	if (msg == NULL) {
 		DRM_ERROR("Cannot allocate memory to get %s", guest_info_param);
@@ -398,7 +398,7 @@ int vmw_host_log(const char *log)
 	if (!log)
 		return ret;
 
-	msg_len = strlen(log) + strlen("log ") + 1;
+	msg_len = strlen(log) + DSTRLEN("log ") + 1;
 	msg = kzalloc(msg_len, GFP_KERNEL);
 	if (msg == NULL) {
 		DRM_ERROR("Cannot allocate memory for log message\n");

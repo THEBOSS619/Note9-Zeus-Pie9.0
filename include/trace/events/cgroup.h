@@ -62,7 +62,7 @@ DECLARE_EVENT_CLASS(cgroup,
 		__field(	int,		level			)
 		__dynamic_array(char,		path,
 				cgrp->kn ? cgroup_path(cgrp, NULL, 0) + 1
-					 : strlen("(null)"))
+					 : DSTRLEN("(null)"))
 	),
 
 	TP_fast_assign(
@@ -120,7 +120,7 @@ DECLARE_EVENT_CLASS(cgroup_migrate,
 		__field(	int,		dst_level		)
 		__dynamic_array(char,		dst_path,
 				dst_cgrp->kn ? cgroup_path(dst_cgrp, NULL, 0) + 1
-					     : strlen("(null)"))
+					     : DSTRLEN("(null)"))
 		__field(	int,		pid			)
 		__string(	comm,		task->comm		)
 	),

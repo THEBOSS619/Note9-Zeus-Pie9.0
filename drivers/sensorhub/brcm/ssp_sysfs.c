@@ -857,7 +857,7 @@ static ssize_t bcm_minidump_show(struct device *dev,
         const char token = ';';
 
 	totalLen = (int)strlen(data->resetInfo)
-		+ (data->IsGpsWorking ? (int)strlen("GPS ON ") : (int)strlen("GPS OFF "));
+		+ (data->IsGpsWorking ? (int)DSTRLEN("GPS ON ") : (int)DSTRLEN("GPS OFF "));
 
 	if ((int)strlen(data->resetInfo)) {
                 memset(resetString, 0, ARRAY_SIZE(resetString));

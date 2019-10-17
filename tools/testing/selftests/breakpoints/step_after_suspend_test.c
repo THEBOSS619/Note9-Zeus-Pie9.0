@@ -153,7 +153,7 @@ void suspend(void)
 		ksft_exit_fail();
 	}
 
-	if (write(power_state_fd, "mem", strlen("mem")) != strlen("mem")) {
+	if (write(power_state_fd, "mem", DSTRLEN("mem")) != DSTRLEN("mem")) {
 		perror("entering suspend failed");
 		ksft_exit_fail();
 	}

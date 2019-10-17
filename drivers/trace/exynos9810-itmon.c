@@ -886,9 +886,9 @@ static void itmon_post_handler_by_master(struct itmon_dev *itmon,
 	 * if master is CPU or SCI_CCM or SCI_IRPM,
 	 * then we expect any exception at CPU
 	 */
-	if ((!strncmp(traceinfo->port, "CPU", strlen("CPU"))) ||
-	    (!strncmp(traceinfo->port, "SCI_CCM", strlen("SCI_CCM"))) ||
-	    (!strncmp(traceinfo->port, "SCI_IRPM", strlen("SCI_IRPM")))) {
+	if ((!strncmp(traceinfo->port, "CPU", DSTRLEN("CPU"))) ||
+	    (!strncmp(traceinfo->port, "SCI_CCM", DSTRLEN("SCI_CCM"))) ||
+	    (!strncmp(traceinfo->port, "SCI_IRPM", DSTRLEN("SCI_IRPM")))) {
 		ktime_t now, interval;
 
 		now = ktime_get();

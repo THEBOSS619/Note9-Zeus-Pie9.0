@@ -2493,15 +2493,15 @@ static int ks_wlan_get_wep_ascii(struct net_device *dev,
 	}
 	/* for SLEEP MODE */
 	strcpy(tmp, " WEP keys ASCII \n");
-	len += strlen(" WEP keys ASCII \n");
+	len += DSTRLEN(" WEP keys ASCII \n");
 
 	for (i = 0; i < 4; i++) {
 		strcpy(tmp + len, "\t[");
-		len += strlen("\t[");
+		len += DSTRLEN("\t[");
 		tmp[len] = '1' + i;
 		len++;
 		strcpy(tmp + len, "] ");
-		len += strlen("] ");
+		len += DSTRLEN("] ");
 		if (priv->reg.wep_key[i].size) {
 			strcpy(tmp + len,
 			       (priv->reg.wep_key[i].size <
@@ -2515,10 +2515,10 @@ static int ks_wlan_get_wep_ascii(struct net_device *dev,
 				     priv->reg.wep_key[i].val[j] : ' ');
 
 			strcpy(tmp + len, "]\n");
-			len += strlen("]\n");
+			len += DSTRLEN("]\n");
 		} else {
 			strcpy(tmp + len, "off\n");
-			len += strlen("off\n");
+			len += DSTRLEN("off\n");
 		}
 	}
 

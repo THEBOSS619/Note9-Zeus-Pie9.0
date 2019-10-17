@@ -2370,7 +2370,7 @@ wl_cfgvendor_get_ndev(struct bcm_cfg80211 *cfg, struct wireless_dev *wdev,
 	/* check whether ifname=<ifname> is provided in the command */
 	pos = strstr(data, "ifname=");
 	if (pos) {
-		pos += strlen("ifname=");
+		pos += DSTRLEN("ifname=");
 		pos1 = strstr(pos, " ");
 		if (!pos1) {
 			WL_ERR(("command format error \n"));
@@ -2513,7 +2513,7 @@ wl_cfgvendor_priv_bcm_handler(struct wiphy *wiphy,
 			WL_DBG(("bytes_written: %d \n", bytes_written));
 			if (bytes_written == 0) {
 				snprintf(cmd_buf, cmd_buf_len, "%s", "OK");
-				data_len = strlen("OK");
+				data_len = DSTRLEN("OK");
 			} else if (bytes_written > 0) {
 				if (bytes_written >= (cmd_buf_len - 1)) {
 					/* Not expected */
@@ -4339,14 +4339,14 @@ wl_cfgvendor_nan_tx_followup_ind_event_data_filler(struct sk_buff *msg,
 	}
 	if (event_data->status == NAN_STATUS_SUCCESS) {
 		ret = nla_put(msg, NAN_ATTRIBUTE_REASON,
-				strlen("NAN_STATUS_SUCCESS"), event_data->nan_reason);
+				DSTRLEN("NAN_STATUS_SUCCESS"), event_data->nan_reason);
 		if (unlikely(ret)) {
 			WL_ERR(("Failed to put nan reason, ret=%d\n", ret));
 			goto fail;
 		}
 	} else {
 		ret = nla_put(msg, NAN_ATTRIBUTE_REASON,
-				strlen("NAN_STATUS_NO_OTA_ACK"), event_data->nan_reason);
+				DSTRLEN("NAN_STATUS_NO_OTA_ACK"), event_data->nan_reason);
 		if (unlikely(ret)) {
 			WL_ERR(("Failed to put nan reason, ret=%d\n", ret));
 			goto fail;
@@ -4388,14 +4388,14 @@ wl_cfgvendor_nan_svc_terminate_event_filler(struct sk_buff *msg,
 	}
 	if (event_data->status == NAN_STATUS_SUCCESS) {
 		ret = nla_put(msg, NAN_ATTRIBUTE_REASON,
-				strlen("NAN_STATUS_SUCCESS"), event_data->nan_reason);
+				DSTRLEN("NAN_STATUS_SUCCESS"), event_data->nan_reason);
 		if (unlikely(ret)) {
 			WL_ERR(("Failed to put nan reason, ret=%d\n", ret));
 			goto fail;
 		}
 	} else {
 		ret = nla_put(msg, NAN_ATTRIBUTE_REASON,
-				strlen("NAN_STATUS_INTERNAL_FAILURE"), event_data->nan_reason);
+				DSTRLEN("NAN_STATUS_INTERNAL_FAILURE"), event_data->nan_reason);
 		if (unlikely(ret)) {
 			WL_ERR(("Failed to put nan reason, ret=%d\n", ret));
 			goto fail;
@@ -4701,7 +4701,7 @@ wl_cfgvendor_send_nan_event(struct wiphy *wiphy, struct net_device *dev,
 			goto fail;
 		}
 		ret = nla_put(msg, NAN_ATTRIBUTE_REASON,
-			strlen("NAN_STATUS_SUCCESS"), event_data->nan_reason);
+			DSTRLEN("NAN_STATUS_SUCCESS"), event_data->nan_reason);
 		if (unlikely(ret)) {
 			WL_ERR(("Failed to put reason code, ret=%d\n", ret));
 			goto fail;

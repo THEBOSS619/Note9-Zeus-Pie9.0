@@ -228,16 +228,16 @@ static struct hist_trigger_attrs *parse_hist_trigger_attrs(char *trigger_str)
 	while (trigger_str) {
 		char *str = strsep(&trigger_str, ":");
 
-		if ((strncmp(str, "key=", strlen("key=")) == 0) ||
-		    (strncmp(str, "keys=", strlen("keys=")) == 0))
+		if ((strncmp(str, "key=", DSTRLEN("key=")) == 0) ||
+		    (strncmp(str, "keys=", DSTRLEN("keys=")) == 0))
 			attrs->keys_str = kstrdup(str, GFP_KERNEL);
-		else if ((strncmp(str, "val=", strlen("val=")) == 0) ||
-			 (strncmp(str, "vals=", strlen("vals=")) == 0) ||
-			 (strncmp(str, "values=", strlen("values=")) == 0))
+		else if ((strncmp(str, "val=", DSTRLEN("val=")) == 0) ||
+			 (strncmp(str, "vals=", DSTRLEN("vals=")) == 0) ||
+			 (strncmp(str, "values=", DSTRLEN("values=")) == 0))
 			attrs->vals_str = kstrdup(str, GFP_KERNEL);
-		else if (strncmp(str, "sort=", strlen("sort=")) == 0)
+		else if (strncmp(str, "sort=", DSTRLEN("sort=")) == 0)
 			attrs->sort_key_str = kstrdup(str, GFP_KERNEL);
-		else if (strncmp(str, "name=", strlen("name=")) == 0)
+		else if (strncmp(str, "name=", DSTRLEN("name=")) == 0)
 			attrs->name = kstrdup(str, GFP_KERNEL);
 		else if (strcmp(str, "pause") == 0)
 			attrs->pause = true;
@@ -246,7 +246,7 @@ static struct hist_trigger_attrs *parse_hist_trigger_attrs(char *trigger_str)
 			attrs->cont = true;
 		else if (strcmp(str, "clear") == 0)
 			attrs->clear = true;
-		else if (strncmp(str, "size=", strlen("size=")) == 0) {
+		else if (strncmp(str, "size=", DSTRLEN("size=")) == 0) {
 			int map_bits = parse_map_size(str);
 
 			if (map_bits < 0) {

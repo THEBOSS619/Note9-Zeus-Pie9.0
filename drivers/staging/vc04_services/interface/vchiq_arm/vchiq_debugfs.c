@@ -136,13 +136,13 @@ static int debugfs_log_write(struct file *file,
 		return -EFAULT;
 	kbuf[count - 1] = 0;
 
-	if (strncmp("error", kbuf, strlen("error")) == 0)
+	if (strncmp("error", kbuf, DSTRLEN("error")) == 0)
 		*levp = VCHIQ_LOG_ERROR;
-	else if (strncmp("warning", kbuf, strlen("warning")) == 0)
+	else if (strncmp("warning", kbuf, DSTRLEN("warning")) == 0)
 		*levp = VCHIQ_LOG_WARNING;
-	else if (strncmp("info", kbuf, strlen("info")) == 0)
+	else if (strncmp("info", kbuf, DSTRLEN("info")) == 0)
 		*levp = VCHIQ_LOG_INFO;
-	else if (strncmp("trace", kbuf, strlen("trace")) == 0)
+	else if (strncmp("trace", kbuf, DSTRLEN("trace")) == 0)
 		*levp = VCHIQ_LOG_TRACE;
 	else
 		*levp = VCHIQ_LOG_DEFAULT;
