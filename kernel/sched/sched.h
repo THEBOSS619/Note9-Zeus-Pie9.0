@@ -1392,7 +1392,7 @@ struct sched_class {
 	 */
 	struct task_struct * (*pick_next_task) (struct rq *rq,
 						struct task_struct *prev,
-						struct rq_flags *rf);
+						struct pin_cookie cookie);
 	void (*put_prev_task) (struct rq *rq, struct task_struct *p);
 
 #ifdef CONFIG_SMP
@@ -1851,6 +1851,7 @@ extern void unlock_rq_of(struct rq *rq, struct task_struct *p, struct rq_flags *
 
 #ifdef CONFIG_SMP
 #ifdef CONFIG_PREEMPT
+
 static inline void double_rq_lock(struct rq *rq1, struct rq *rq2);
 
 /*
