@@ -48,6 +48,7 @@ config USB
 	tristate "Support for Host-side USB"
 	depends on USB_ARCH_HAS_HCD
 	select USB_COMMON
+	select USB_F_HID
 	select NLS  # for UTF-8 strings
 	---help---
 	  Universal Serial Bus (USB) is a specification for a serial bus
