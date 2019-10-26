@@ -5,7 +5,7 @@ obj-$(CONFIG_USB_DWC3)			+= dwc3.o
 
 dwc3-y					:= core.o trace.o
 
-dwc3-$(CONFIG_DEBUG_KERNEL)		+= debug_ipc.o
+dwc3-$(CONFIG_DEBUG_KERNEL)		+= debug.o
 
 
 dwc3-y					+= otg.o
