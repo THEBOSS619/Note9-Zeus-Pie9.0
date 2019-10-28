@@ -11,6 +11,7 @@
 #include <linux/input.h>
 #include <linux/moduleparam.h>
 #include <linux/slab.h>
+#include <linux/sched.h>
 
 unsigned long last_input_time;
 
@@ -325,10 +326,12 @@ static int fb_notifier_cb(struct notifier_block *nb,
 	if (*blank == FB_BLANK_UNBLANK) {
 		set_boost_bit(b, SCREEN_AWAKE);
 		__cpu_input_boost_kick_max(b, CONFIG_WAKE_BOOST_DURATION_MS);
+		disable_schedtune_boost(0);
 #ifdef CONFIG_CPU_INPUT_BOOST_DEBUG
 		pr_info("kicked max wake boost due to unblank event\n");
 #endif
 	} else {
+		disable_schedtune_boost(1);
 		clear_boost_bit(b, SCREEN_AWAKE);
 		unboost_all_cpus(b);
 #ifdef CONFIG_CPU_INPUT_BOOST_DEBUG
