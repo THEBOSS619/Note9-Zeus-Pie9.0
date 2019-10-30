@@ -3809,6 +3809,7 @@ static inline unsigned int task_cpu(const struct task_struct *p)
 #else
 	return task_thread_info(p)->cpu;
 #endif
+#endif
 }
 
 static inline int task_node(const struct task_struct *p)
