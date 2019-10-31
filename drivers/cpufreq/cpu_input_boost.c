@@ -12,6 +12,7 @@
 #include <linux/moduleparam.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
+#include "../../kernel/sched/sched.h"
 #include <linux/kthread.h>
 
 #define ST_TA "top-app"
@@ -204,10 +205,11 @@ static void unboost_all_cpus(struct boost_drv *b)
 
 static void __cpu_input_boost_kick(struct boost_drv *b)
 {
+	u32 state;
 	if (!(get_boost_state(b) & SCREEN_AWAKE))
 		return;
 
-	queue_work(b->wq, &b->input_boost);
+	kthread_queue_work(&b->worker, &b->input_boost);
 }
 
 void cpu_input_boost_kick(void)
@@ -480,9 +482,6 @@ static void cpu_input_boost_input_event(struct input_handle *handle,
 					int value)
 {
 	struct boost_drv *b = handle->handler->private;
-
-	if (!(state & SCREEN_AWAKE))
-		return;
 
 	__cpu_input_boost_kick(b);
 
