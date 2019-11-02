@@ -5680,9 +5680,11 @@ unsigned long capacity_curr_of(int cpu)
 	       >> SCHED_CAPACITY_SHIFT;
 }
 
+bool energy_aware_enable = false;
+
 static inline bool energy_aware(void)
 {
-	return sched_feat(ENERGY_AWARE);
+	return energy_aware_enable;
 }
 
 /*
