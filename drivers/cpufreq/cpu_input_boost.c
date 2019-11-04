@@ -252,6 +252,7 @@ void cpu_input_boost_kick_max(unsigned int duration_ms)
 		return;
 
 
+	energy_aware_enable = false;
 	__cpu_input_boost_kick_max(b, duration_ms);
 }
 
@@ -347,6 +348,7 @@ static void max_unboost_worker(struct work_struct *work)
 					   typeof(*b), max_unboost);
 	u32 state = get_boost_state(b);
 
+	energy_aware_enable = true;
 	clear_boost_bit(b, MAX_BOOST);
 	update_online_cpu_policy();
 
