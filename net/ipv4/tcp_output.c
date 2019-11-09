@@ -2453,6 +2453,7 @@ bool tcp_write_xmit(struct sock *sk, unsigned int mss_now, int nonagle,
 	 * exiting the loop inside tcp_mtu_probe, making sure that only one
 	 * single DSS-mapping gets probed.
 	 */
+	tcp_mstamp_refresh(tp);
 	if (!push_one
 #ifdef CONFIG_MPTCP
 		&& !mptcp(tp)
