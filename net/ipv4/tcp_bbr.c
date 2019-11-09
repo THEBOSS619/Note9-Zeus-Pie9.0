@@ -57,6 +57,7 @@
  * resolution timer per TCP socket and may use more resources.
  */
 #include <linux/module.h>
+#include <linux/tcp.h>
 #include <net/tcp.h>
 #include <linux/inet_diag.h>
 #include <linux/inet.h>
@@ -117,7 +118,7 @@ struct bbr {
 	u32	full_bw;	/* recent bw, to estimate if pipe is full */
 
 	/* For tracking ACK aggregation: */
-	u64	ack_epoch_mstamp;	/* start of ACK sampling epoch */
+	struct skb_mstamp	ack_epoch_mstamp;	/* start of ACK sampling epoch */
 	u16	extra_acked[2];		/* max excess data ACKed in epoch */
 	u32	ack_epoch_acked:20,	/* packets (S)ACKed in sampling epoch */
 		extra_acked_win_rtts:5,	/* age of extra_acked, in round trips */
@@ -332,7 +333,7 @@ static void bbr_cwnd_event(struct sock *sk, enum tcp_ca_event event)
 
 	if (event == CA_EVENT_TX_START && tp->app_limited) {
 		bbr->idle_restart = 1;
-		bbr->ack_epoch_mstamp = tp->tcp_mstamp;
+		bbr->ack_epoch_mstamp = tp->_tcp_mstamp;
 		bbr->ack_epoch_acked = 0;
 		/* Avoid pointless buffer overflows: pace at est. bw if we don't
 		 * need more speed (we're restarting from idle and app-limited).
@@ -799,8 +800,7 @@ static void bbr_update_ack_aggregation(struct sock *sk,
 	}
 
 	/* Compute how many packets we expected to be delivered over epoch. */
-	epoch_us = tcp_stamp_us_delta(tp->delivered_mstamp,
-				      bbr->ack_epoch_mstamp);
+	epoch_us = skb_mstamp_us_delta(&tp->delivered_mstamp, &bbr->ack_epoch_mstamp);
 	expected_acked = ((u64)bbr_bw(sk) * epoch_us) / BW_UNIT;
 
 	/* Reset the aggregation epoch if ACK rate is below expected rate or
@@ -1030,7 +1030,7 @@ static void bbr_init(struct sock *sk)
 	bbr_reset_lt_bw_sampling(sk);
 	bbr_reset_startup_mode(sk);
 
-	bbr->ack_epoch_mstamp = tp->tcp_mstamp;
+	bbr->ack_epoch_mstamp = tp->_tcp_mstamp;
 	bbr->ack_epoch_acked = 0;
 	bbr->extra_acked_win_rtts = 0;
 	bbr->extra_acked_win_idx = 0;

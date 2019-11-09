@@ -3397,7 +3397,7 @@ static void tcp_update_rtt_min(struct sock *sk, u32 rtt_us, const int flag)
 		 */
 		return;
 	}
-	minmax_running_min(&tp->rtt_min, wlen, tcp_jiffies32,
+	minmax_running_min(&tp->rtt_min, wlen, tcp_time_stamp,
 			   rtt_us ? : jiffies_to_usecs(1));
 }
 
@@ -3673,9 +3673,9 @@ static int tcp_clean_rtx_queue(struct sock *sk, int prior_fackets,
 	if (skb && (TCP_SKB_CB(skb)->sacked & TCPCB_SACKED_ACKED))
 		flag |= FLAG_SACK_RENEGING;
 
-	if (likely(first_ackt) && !(flag & FLAG_RETRANS_DATA_ACKED)) {
-		seq_rtt_us = tcp_stamp_us_delta(tp->tcp_mstamp, first_ackt);
-		ca_rtt_us = tcp_stamp_us_delta(tp->tcp_mstamp, last_ackt);
+	if (likely(first_ackt.v64) && !(flag & FLAG_RETRANS_DATA_ACKED)) {
+		seq_rtt_us = skb_mstamp_us_delta(now, &first_ackt);
+		ca_rtt_us = skb_mstamp_us_delta(now, &last_ackt);
 
 		if (pkts_acked == 1 && last_in_flight < tp->mss_cache &&
 		    last_in_flight && !prior_sacked && fully_acked &&
