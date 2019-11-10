@@ -980,6 +980,8 @@ static int takedown_cpu(unsigned int cpu)
 	 *
 	 * Wait for the stop thread to go away.
 	 */
+	while (!idle_cpu_relaxed(cpu))
+		cpu_read_relax();
 	wait_for_completion(&st->done);
 	BUG_ON(st->state != CPUHP_AP_IDLE_DEAD);
 

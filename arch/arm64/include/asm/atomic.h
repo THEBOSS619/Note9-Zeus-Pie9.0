@@ -55,6 +55,7 @@
 
 #define atomic_read(v)			READ_ONCE((v)->counter)
 #define atomic_set(v, i)		WRITE_ONCE(((v)->counter), (i))
+#define cpu_relaxed_read_atomic(v) atomic_read(v)
 
 #define atomic_add_return_relaxed	atomic_add_return_relaxed
 #define atomic_add_return_acquire	atomic_add_return_acquire

@@ -3,6 +3,8 @@
  *
  * Copyright (C) 1995-1999 Russell King
  * Copyright (C) 2012 ARM Ltd.
+ * 
+ * Copyright (c) 2014, NVIDIA CORPORATION. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -224,4 +226,5 @@ int cpu_enable_pan(void *__unused);
 int cpu_enable_cache_maint_trap(void *__unused);
 
 #endif /* __ASSEMBLY__ */
+#include <asm-generic/processor.h>
 #endif /* __ASM_PROCESSOR_H */
