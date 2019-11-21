@@ -26,6 +26,7 @@
 #include <linux/input/sec_cmd.h>
 #include <linux/interrupt.h>
 #include <linux/io.h>
+#include <linux/pm_qos.h>
 #include <linux/irq.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -750,6 +751,7 @@ struct sec_ts_data {
 	u32	print_info_cnt_open;
 	u32	print_info_cnt_release;
 	u16	print_info_currnet_mode;
+	struct pm_qos_request pm_qos_req;
 #ifdef USE_POWER_RESET_WORK
 	struct delayed_work reset_work;
 	volatile bool reset_is_on_going;
