@@ -223,7 +223,7 @@ void cpu_input_boost_kick(void)
 	__cpu_input_boost_kick(b);
 
 	if (likely(input_boost_duration))
-		queue_work(b->wq, &b->input_boost);
+		kthread_queue_work(&b->worker, &b->input_boost);
 }
 
 static void __cpu_input_boost_kick_max(struct boost_drv *b,
@@ -494,7 +494,7 @@ static void cpu_input_boost_input_event(struct input_handle *handle,
 	__cpu_input_boost_kick(b);
 
 	if (likely(input_boost_duration))
-		queue_work(b->wq, &b->input_boost);
+		kthread_queue_work(&b->worker, &b->input_boost);
 
 	last_input_jiffies = jiffies;
 }
