@@ -65,6 +65,7 @@
 #include <linux/file.h>
 #include <linux/binfmts.h>
 #include <linux/cpu_input_boost.h>
+#include "linux/state_notifier.h"
 #include <linux/psi.h>
 #include <net/sock.h>
 
@@ -2932,8 +2933,7 @@ static ssize_t __cgroup_procs_write(struct kernfs_open_file *of, char *buf,
 	if (!ret)
 		ret = cgroup_attach_task(cgrp, tsk, threadgroup);
 
-	/* This covers boosting for app launches and app transitions */
-	if (!ret && !threadgroup &&
+	if (!ret && !threadgroup && !state_suspended &&
 	    !strcmp(of->kn->parent->name, "top-app") &&
 	    is_zygote_pid(tsk->parent->pid)) {
 		devfreq_boost_kick_max(DEVFREQ_EXYNOS_MIF, 500);
