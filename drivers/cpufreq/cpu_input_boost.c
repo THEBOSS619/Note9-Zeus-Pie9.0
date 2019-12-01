@@ -69,8 +69,6 @@ module_param(suspend_root_stune_boost, int, 0644);
 #define INPUT_BOOST		BIT(1)
 #define MAX_BOOST		BIT(2)
 #define GENERAL_BOOST		BIT(3)
-#define DISPLAY_STUNE_BOOST	BIT(7)
-#define DISPLAY_BG_STUNE_BOOST	BIT(8)
 
 struct boost_drv {
 	struct kthread_worker worker;
@@ -95,7 +93,9 @@ struct boost_drv {
 	int max_stune_slot;
 	bool general_stune_active;
 	int general_stune_slot;
+	bool display_stune_active;
 	int display_stune_slot;
+	bool display_bg_stune_active;
 	int display_bg_stune_slot;
 	int ta_stune_boost_default;
 	int fg_stune_boost_default;
@@ -422,7 +422,6 @@ static int fb_notifier_cb(struct notifier_block *nb,
 	struct boost_drv *b = container_of(nb, typeof(*b), fb_notif);
 	struct fb_event *evdata = data;
 	int *blank = evdata->data;
-	u32 state = get_boost_state(b);
 
 	/* Parse framebuffer blank events as soon as they occur */
 	if (action != FB_EARLY_EVENT_BLANK)
@@ -430,7 +429,6 @@ static int fb_notifier_cb(struct notifier_block *nb,
 
 	/* Boost when the screen turns on and unboost when it turns off */
 	if (*blank == FB_BLANK_UNBLANK) {
-		set_boost_bit(b, SCREEN_AWAKE);
 		if (b->ta_stune_boost_default != INT_MIN)
 			set_stune_boost(ST_TA, b->ta_stune_boost_default, NULL);
 		if (b->fg_stune_boost_default != INT_MIN)
@@ -442,9 +440,9 @@ static int fb_notifier_cb(struct notifier_block *nb,
 		if (b->root_stune_boost_default != INT_MIN)
 			set_stune_boost(ST_ROOT, b->root_stune_boost_default, NULL);
 
-		update_stune_boost(b, state, DISPLAY_STUNE_BOOST, ST_TA,
+		update_stune_boost(b, &b->display_stune_active, ST_TA,
 			           display_stune_boost, &b->display_stune_slot);
-		update_stune_boost(b, state, DISPLAY_BG_STUNE_BOOST, ST_BG,
+		update_stune_boost(b, &b->display_bg_stune_active, ST_BG,
 			           display_bg_stune_boost, &b->display_bg_stune_slot);
 		__cpu_input_boost_kick_max(b, CONFIG_WAKE_BOOST_DURATION_MS);
 		disable_schedtune_boost(0);
@@ -453,10 +451,9 @@ static int fb_notifier_cb(struct notifier_block *nb,
 #endif
 	} else {
 		disable_schedtune_boost(1);
-		clear_boost_bit(b, SCREEN_AWAKE);
-		clear_stune_boost(b, state, DISPLAY_STUNE_BOOST, ST_TA,
+		clear_stune_boost(b, &b->display_stune_active, ST_TA,
 				  b->display_stune_slot);
-		clear_stune_boost(b, state, DISPLAY_BG_STUNE_BOOST, ST_BG,
+		clear_stune_boost(b, &b->display_bg_stune_active, ST_BG,
 				  b->display_bg_stune_slot);
 		unboost_all_cpus(b);
 
