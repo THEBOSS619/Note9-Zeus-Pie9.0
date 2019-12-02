@@ -201,7 +201,6 @@ static void unboost_all_cpus(struct boost_drv *b)
 
 static void __cpu_input_boost_kick(struct boost_drv *b)
 {
-	u32 state;
 	if (!(get_boost_state(b) & SCREEN_AWAKE))
 		return;
 
@@ -216,9 +215,6 @@ void cpu_input_boost_kick(void)
 		return;
 
 	__cpu_input_boost_kick(b);
-
-	if (likely(input_boost_duration))
-		kthread_queue_work(&b->worker, &b->input_boost);
 }
 
 static void __cpu_input_boost_kick_max(struct boost_drv *b,
@@ -478,9 +474,6 @@ static void cpu_input_boost_input_event(struct input_handle *handle,
 	struct boost_drv *b = handle->handler->private;
 
 	__cpu_input_boost_kick(b);
-
-	if (likely(input_boost_duration))
-		kthread_queue_work(&b->worker, &b->input_boost);
 
 	last_input_jiffies = jiffies;
 }
