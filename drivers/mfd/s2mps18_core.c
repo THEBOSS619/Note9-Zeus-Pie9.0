@@ -251,7 +251,7 @@ static int of_s2mps18_dt(struct device *dev,
 			 struct s2mps18_dev *s2mps18)
 {
 	struct device_node *np = dev->of_node;
-	int ret, strlen;
+	int ret, DSTRLEN;
 	const char *status;
 	u32 val;
 
@@ -262,10 +262,10 @@ static int of_s2mps18_dt(struct device *dev,
 
 	pdata->irq_gpio = of_get_named_gpio(np, "s2mps18,irq-gpio", 0);
 
-	status = of_get_property(np, "s2mps18,wakeup", &strlen);
+	status = of_get_property(np, "s2mps18,wakeup", &DSTRLEN);
 	if (status == NULL)
 		return -EINVAL;
-	if (strlen > 0) {
+	if (DSTRLEN > 0) {
 		if (!strcmp(status, "enabled") || !strcmp(status, "okay"))
 			pdata->wakeup = true;
 		else
@@ -283,20 +283,20 @@ static int of_s2mps18_dt(struct device *dev,
 	if (!pdata->wtsr_smpl)
 		return -ENOMEM;
 
-	status = of_get_property(np, "wtsr_en", &strlen);
+	status = of_get_property(np, "wtsr_en", &DSTRLEN);
 	if (status == NULL)
 		return -EINVAL;
-	if (strlen > 0) {
+	if (DSTRLEN > 0) {
 		if (!strcmp(status, "enabled") || !strcmp(status, "okay"))
 			pdata->wtsr_smpl->wtsr_en = true;
 		else
 			pdata->wtsr_smpl->wtsr_en = false;
 	}
 
-	status = of_get_property(np, "smpl_en", &strlen);
+	status = of_get_property(np, "smpl_en", &DSTRLEN);
 	if (status == NULL)
 		return -EINVAL;
-	if (strlen > 0) {
+	if (DSTRLEN > 0) {
 		if (!strcmp(status, "enabled") || !strcmp(status, "okay"))
 			pdata->wtsr_smpl->smpl_en = true;
 		else
