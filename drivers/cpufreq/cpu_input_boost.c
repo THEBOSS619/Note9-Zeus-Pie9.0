@@ -15,6 +15,7 @@
 #include <linux/sched.h>
 #include "../../kernel/sched/sched.h"
 #include <linux/kthread.h>
+#include <linux/version.h>
 
 #define ST_TA "top-app"
 #define ST_FG "foreground"
@@ -67,6 +68,11 @@ module_param(suspend_bg_stune_boost, int, 0644);
 module_param(suspend_root_stune_boost, int, 0644);
 #endif
 
+/* The sched_param struct is located elsewhere in newer kernels */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
+#include <uapi/linux/sched/types.h>
+#endif
+
 /* Available bits for boost_drv state */
 #define SCREEN_AWAKE		BIT(0)
 #define INPUT_BOOST		BIT(1)
@@ -84,6 +90,7 @@ struct boost_drv {
 	struct delayed_work general_unboost;
 	struct notifier_block cpu_notif;
 	struct notifier_block fb_notif;
+	wait_queue_head_t boost_waitq;
 	atomic64_t max_boost_expires;
 	atomic_t max_boost_dur;
 	atomic64_t general_boost_expires;
@@ -207,7 +214,10 @@ static void __cpu_input_boost_kick(struct boost_drv *b)
 	if (!(get_boost_state(b) & SCREEN_AWAKE))
 		return;
 
-	kthread_queue_work(&b->worker, &b->input_boost);
+	set_boost_bit(b, INPUT_BOOST);
+	wake_up(&b->boost_waitq);
+	mod_delayed_work(system_unbound_wq, &b->input_unboost,
+			 msecs_to_jiffies(CONFIG_INPUT_BOOST_DURATION_MS));
 }
 
 void cpu_input_boost_kick(void)
@@ -223,11 +233,12 @@ void cpu_input_boost_kick(void)
 static void __cpu_input_boost_kick_max(struct boost_drv *b,
 				       unsigned int duration_ms)
 {
+	unsigned long boost_jiffies = msecs_to_jiffies(duration_ms);
 	unsigned long curr_expires, new_expires;
 
 	do {
 		curr_expires = atomic64_read(&b->max_boost_expires);
-		new_expires = jiffies + msecs_to_jiffies(duration_ms);
+		new_expires = jiffies + boost_jiffies;
 
 		/* Skip this boost if there's a longer boost in effect */
 		if (time_after(curr_expires, new_expires))
@@ -235,8 +246,9 @@ static void __cpu_input_boost_kick_max(struct boost_drv *b,
 	} while (atomic64_cmpxchg(&b->max_boost_expires, curr_expires,
 		new_expires) != curr_expires);
 
-	atomic_set(&b->max_boost_dur, duration_ms);
-	kthread_queue_work(&b->worker, &b->max_boost);
+	set_boost_bit(b, MAX_BOOST);
+	wake_up(&b->boost_waitq);
+	mod_delayed_work(system_unbound_wq, &b->max_unboost, boost_jiffies);
 }
 
 void cpu_input_boost_kick_max(unsigned int duration_ms)
@@ -349,9 +361,32 @@ static void max_unboost_worker(struct work_struct *work)
 
 	energy_aware_enable = true;
 	clear_boost_bit(b, MAX_BOOST);
-	update_online_cpu_policy();
+	wake_up(&b->boost_waitq);
 
 	clear_stune_boost(b, &b->max_stune_active, ST_TA, b->max_stune_slot);
+}
+
+static int cpu_boost_thread(void *data)
+{
+	static const struct sched_param sched_max_rt_prio = {
+		.sched_priority = MAX_RT_PRIO - 1
+	};
+	struct boost_drv *b = data;
+	u32 old_state = 0;
+
+	sched_setscheduler_nocheck(current, SCHED_FIFO, &sched_max_rt_prio);
+
+	while (!kthread_should_stop()) {
+		u32 curr_state;
+
+		wait_event_interruptible(b->boost_waitq,
+			(curr_state = get_boost_state(b)) != old_state ||
+			kthread_should_stop());
+
+		old_state = curr_state;
+		update_online_cpu_policy();
+	}
+	return 0;
 }
 
 static void general_boost_worker(struct kthread_work *work)
@@ -393,6 +428,12 @@ static int cpu_notifier_cb(struct notifier_block *nb,
 		return NOTIFY_OK;
 
 	state = get_boost_state(b);
+
+	/* Unboost when the screen is off */
+	if (state & SCREEN_AWAKE) {
+		policy->min = policy->cpuinfo.min_freq;
+		return NOTIFY_OK;
+	}
 
 	/* Boost CPU to max frequency for max boost */
 	if (state & MAX_BOOST) {
@@ -564,6 +605,7 @@ static struct input_handler cpu_input_boost_input_handler = {
 
 static int __init cpu_input_boost_init(void)
 {
+	struct task_struct *boost_thread;
 	struct boost_drv *b;
 	int ret, i;
 	struct sched_param param = { .sched_priority = MAX_RT_PRIO - 2 };
@@ -603,6 +645,8 @@ static int __init cpu_input_boost_init(void)
 	INIT_DELAYED_WORK(&b->max_unboost, max_unboost_worker);
 	kthread_init_work(&b->general_boost, general_boost_worker);
 	INIT_DELAYED_WORK(&b->general_unboost, general_unboost_worker);
+	init_waitqueue_head(&b->boost_waitq);
+	atomic64_set(&b->max_boost_expires, 0);
 	atomic_set(&b->state, 0);
 	b->ta_stune_boost_default = INT_MIN;
 	b->fg_stune_boost_default = INT_MIN;
@@ -615,7 +659,7 @@ static int __init cpu_input_boost_init(void)
 	ret = cpufreq_register_notifier(&b->cpu_notif, CPUFREQ_POLICY_NOTIFIER);
 	if (ret) {
 		pr_err("Failed to register cpufreq notifier, err: %d\n", ret);
-		goto destroy_wq;
+		goto free_b;
 	}
 
 	cpu_input_boost_input_handler.private = b;
@@ -633,6 +677,14 @@ static int __init cpu_input_boost_init(void)
 		goto unregister_handler;
 	}
 
+	boost_thread = kthread_run_perf_critical(cpu_boost_thread, b,
+						 "cpu_boostd");
+	if (IS_ERR(boost_thread)) {
+		pr_err("Failed to start CPU boost thread, err: %ld\n",
+		       PTR_ERR(boost_thread));
+		goto free_b;
+	}
+
 	boost_drv_g = b;
 
 	return 0;
@@ -641,8 +693,6 @@ unregister_handler:
 	input_unregister_handler(&cpu_input_boost_input_handler);
 unregister_cpu_notif:
 	cpufreq_unregister_notifier(&b->cpu_notif, CPUFREQ_POLICY_NOTIFIER);
-destroy_wq:
-	kthread_destroy_worker(&b->worker);
 free_b:
 	kfree(b);
 	return ret;
