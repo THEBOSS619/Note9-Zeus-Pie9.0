@@ -15,6 +15,7 @@ Improved by THEBOSS619
 #include <linux/fb.h>
 #include <linux/input.h>
 #include <linux/moduleparam.h>
+#include <linux/display_state.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include "../../kernel/sched/sched.h"
@@ -78,10 +79,9 @@ module_param(suspend_root_stune_boost, int, 0644);
 #endif
 
 /* Available bits for boost_drv state */
-#define SCREEN_AWAKE		BIT(0)
-#define INPUT_BOOST		BIT(1)
-#define MAX_BOOST		BIT(2)
-#define GENERAL_BOOST		BIT(3)
+#define INPUT_BOOST		BIT(0)
+#define MAX_BOOST		BIT(1)
+#define GENERAL_BOOST	BIT(2)
 
 struct boost_drv {
 	struct kthread_worker worker;
@@ -121,9 +121,9 @@ struct boost_drv {
 
 static struct boost_drv *boost_drv_g __read_mostly;
 
-static u32 get_boost_freq(struct boost_drv *b, u32 cpu, u32 state)
+static u32 get_boost_freq(struct boost_drv *b, u32 cpu)
 {
-	if (state & INPUT_BOOST) {
+	if (is_display_on()) {
 		if (cpumask_test_cpu(cpu, cpu_lp_mask))
 			return input_boost_freq_lp;
 
@@ -142,9 +142,9 @@ static u32 get_boost_freq(struct boost_drv *b, u32 cpu, u32 state)
 	return 0;
 }
 
-static u32 get_min_freq(struct boost_drv *b, u32 cpu, u32 state)
+static u32 get_min_freq(struct boost_drv *b, u32 cpu)
 {
-	if (state & SCREEN_AWAKE) {
+	if (is_display_on()) {
 		if (cpumask_test_cpu(cpu, cpu_lp_mask))
 			return input_boost_awake_return_freq_lp;
 
@@ -227,7 +227,7 @@ static void unboost_all_cpus(struct boost_drv *b)
 
 static void __cpu_input_boost_kick(struct boost_drv *b)
 {
-	if (!(get_boost_state(b) & SCREEN_AWAKE))
+	if (!is_display_on())
 		return;
 
 	set_boost_bit(b, INPUT_BOOST);
@@ -274,7 +274,7 @@ void cpu_input_boost_kick_max(unsigned int duration_ms)
 	if (!b)
 		return;
 
-	if (!(get_boost_state(b) & SCREEN_AWAKE))
+	if (!is_display_on())
 		return;
 
 	energy_aware_enable = false;
@@ -287,7 +287,6 @@ void cpu_input_boost_kick_wake(void)
 
 	if (!b)
 		return;
-
 	__cpu_input_boost_kick_max(b, wake_boost_duration);
 }
 
@@ -313,14 +312,11 @@ static void __cpu_input_boost_kick_general(struct boost_drv *b,
 void cpu_input_boost_kick_general(unsigned int duration_ms)
 {
 	struct boost_drv *b = boost_drv_g;
-	u32 state;
 
 	if (!b)
 		return;
 
-	state = get_boost_state(b);
-
-	if (!(state & SCREEN_AWAKE))
+	if (!is_display_on())
 		return;
 
 	__cpu_input_boost_kick_general(b, duration_ms);
@@ -438,15 +434,13 @@ static int cpu_notifier_cb(struct notifier_block *nb,
 {
 	struct boost_drv *b = container_of(nb, typeof(*b), cpu_notif);
 	struct cpufreq_policy *policy = data;
-	u32 boost_freq, min_freq, state;
+	u32 boost_freq, min_freq;
 
 	if (action != CPUFREQ_ADJUST)
 		return NOTIFY_OK;
 
-	state = get_boost_state(b);
-
 	/* Unboost when the screen is off */
-	if (state & SCREEN_AWAKE) {
+	if (is_display_on()) {
 		policy->min = policy->cpuinfo.min_freq;
 		clear_stune_boost(b, &b->input_stune_active, ST_TA, b->input_stune_slot);
 		clear_stune_boost(b, &b->max_stune_active, ST_TA, b->max_stune_slot);
@@ -455,7 +449,7 @@ static int cpu_notifier_cb(struct notifier_block *nb,
 	}
 
 	/* Boost CPU to max frequency for max boost */
-	if (state & MAX_BOOST) {
+	if (is_display_on()) {
 		policy->min = policy->max;
 		update_stune_boost(b, &b->input_stune_active, ST_TA, input_stune_boost,
 				   &b->input_stune_slot);
@@ -467,7 +461,7 @@ static int cpu_notifier_cb(struct notifier_block *nb,
 	}
 
 	/* CPU boost is disabled. Don't apply boost */
-	boost_freq = get_boost_freq(b, policy->cpu, state);
+	boost_freq = get_boost_freq(b, policy->cpu);
 	if (boost_freq == 0)
 		return NOTIFY_OK;
 
@@ -475,7 +469,7 @@ static int cpu_notifier_cb(struct notifier_block *nb,
 	 * Boost to policy->max if the boost frequency is higher. When
 	 * unboosting, set policy->min to the absolute min freq for the CPU.
 	 */
-	if (state & INPUT_BOOST || state & GENERAL_BOOST) {
+	if (is_display_on()) {
 		policy->min = min(policy->max, boost_freq);
 		update_stune_boost(b, &b->input_stune_active, ST_TA, input_stune_boost,
 				   &b->input_stune_slot);
@@ -484,7 +478,7 @@ static int cpu_notifier_cb(struct notifier_block *nb,
 		update_stune_boost(b, &b->general_stune_active, ST_TA,
 				   general_stune_boost, &b->general_stune_slot);
 	} else {
-		min_freq = get_min_freq(b, policy->cpu, state);
+		min_freq = get_min_freq(b, policy->cpu);
 		policy->min = max(policy->cpuinfo.min_freq, min_freq);
 		clear_stune_boost(b, &b->input_stune_active, ST_TA, b->input_stune_slot);
 		clear_stune_boost(b, &b->max_stune_active, ST_TA, b->max_stune_slot);
@@ -558,7 +552,7 @@ static void cpu_input_boost_input_event(struct input_handle *handle,
 	__cpu_input_boost_kick(b);
 
 	if (type == EV_KEY && code == KEY_POWER && value == 1 &&
-	    !(get_boost_state(b) & SCREEN_AWAKE))
+	    !is_display_on())
 		__cpu_input_boost_kick_max(b, wake_boost_duration);
 
 	last_input_jiffies = jiffies;

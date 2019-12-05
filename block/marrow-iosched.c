@@ -22,7 +22,7 @@
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/slab.h>
-#include <linux/state_notifier.h>
+#include <linux/display_state.h>
 
 #define MARROW_IOSCHED_PATCHLEVEL	(1)
 
@@ -87,7 +87,7 @@ marrow_choose_request(struct marrow_data *mdata, int data_dir)
 	 * Synchronous requests have priority over asynchronous.
 	 * Read requests have priority over write.
 	 */
-	if (likely(!state_suspended)) {
+	if (!is_display_on()) {
 		if (!list_empty(&sync[data_dir]))
 			return rq_entry_fifo(sync[data_dir].next);
 		if (!list_empty(&async[data_dir]))
@@ -130,7 +130,7 @@ marrow_dispatch_requests(struct request_queue *q, int force)
 	/* Retrieve request */
 	if (likely(!rq)) {
 		/* If screen off or writes tip seesaw, allow writes through */
-		if (unlikely(state_suspended || sizeof(&mdata->fifo_list[SYNC][WRITE]) > sizeof(&mdata->fifo_list[SYNC][READ])))
+		if (unlikely(is_display_on()) || sizeof(&mdata->fifo_list[SYNC][WRITE]) > sizeof(&mdata->fifo_list[SYNC][READ]))
 			data_dir = WRITE;
 
 		rq = marrow_choose_request(mdata, data_dir);
@@ -190,7 +190,7 @@ static __always_inline int marrow_init_queue(struct request_queue *q, struct ele
 	INIT_LIST_HEAD(&mdata->fifo_list[ASYNC][WRITE]);
 
 	/* Initialize data */
-	mdata->fifo_batch = (!state_suspended ? FIFO_BATCH : FIFO_BATCH_SCREEN_OFF);
+	mdata->fifo_batch = (!is_display_on() ? FIFO_BATCH : FIFO_BATCH_SCREEN_OFF);
 
 	spin_lock_irq(q->queue_lock);
 	q->elevator = eq;

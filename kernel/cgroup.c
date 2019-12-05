@@ -69,6 +69,8 @@
 #include <linux/psi.h>
 #include <net/sock.h>
 
+#include <linux/display_state.h>
+
 #define CREATE_TRACE_POINTS
 #include <trace/events/cgroup.h>
 
@@ -2933,11 +2935,10 @@ static ssize_t __cgroup_procs_write(struct kernfs_open_file *of, char *buf,
 	if (!ret)
 		ret = cgroup_attach_task(cgrp, tsk, threadgroup);
 
-	if (!ret && !threadgroup && !state_suspended &&
+	if (!ret && !threadgroup && !is_display_on() &&
 	    !strcmp(of->kn->parent->name, "top-app") &&
 	    !strcmp(of->kn->parent->name, "rt") &&
 	    !strcmp(of->kn->parent->name, "foreground") &&
-	    !strcmp(tsk->comm, "ch.deletescape.lawnchair.plah") &&
 	    !strcmp(tsk->comm, "com.android.phone") &&
 	    !strcmp(tsk->comm, "com.android.chrome") &&
 	    !strcmp(tsk->comm, "com.android.server.telecom") &&

@@ -22,6 +22,7 @@
 #ifdef CONFIG_STATE_NOTIFIER
 #include <linux/state_notifier.h>
 #endif
+#include <linux/display_state.h>
 #include <linux/page_owner.h>
 #include <linux/fb.h>
 #include <linux/moduleparam.h>
@@ -1859,7 +1860,7 @@ static void compact_nodes(void)
 static void do_compaction(struct work_struct *work)
 {
 	/* Return early if the screen is on */
-	if (screen_on)
+	if (is_display_on())
 		return;
 
 	pr_info("Scheduled memory compaction is starting\n");
