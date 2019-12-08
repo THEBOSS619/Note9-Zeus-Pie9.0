@@ -5156,16 +5156,17 @@
 					const-type = <CONSTRAINT_MIN>;
 					dm-type = <DM_MIF>;
 						/*  cpu     mif  */
-					table = < 2002000  845000
-						  1794000  845000
-						  1690000  845000
-						  1456000  676000
-						  1248000  676000
-						  1053000  676000
+					table = < 2002000  2093000
+						  1950000  2002000
+						  1794000  1794000
+						  1690000  1539000
+						  1456000  1352000
+						  1248000  1014000
+						  1053000  845000
 						   949000  676000
 						   832000  546000
-						   715000  546000
-						   598000  421000
+						   715000  421000
+						   598000       0
 						   455000       0
 						   >;
 				};
@@ -5191,7 +5192,7 @@
 			pm_qos-min-class = <5>;
 			pm_qos-max-class = <6>;
 
-			pm_qos-booting = <1794000>;
+			pm_qos-booting = <2106000>;
 
 			#cooling-cells = <2>; /* min followed by max */
 
@@ -5241,8 +5242,8 @@
 		sensors = <94>;		/* 0x5E */
 		sensing_mode = "balance";
 		hotplug_enable = <1>;
-		hotplug_in_threshold = <91>;
-		hotplug_out_threshold = <96>;
+		hotplug_in_threshold = <93>;
+		hotplug_out_threshold = <94>;
 		#include "exynos9810-tmu-sensor-conf.dtsi"
 	};
 
