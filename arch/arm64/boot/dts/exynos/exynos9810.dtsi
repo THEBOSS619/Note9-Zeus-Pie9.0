@@ -5164,8 +5164,8 @@
 						   949000  676000
 						   832000  546000
 						   715000  421000
-						   598000       0
-						   455000       0
+						   598000  421000
+						   455000  421000
 						   >;
 				};
 				mif-skew {
@@ -5240,8 +5240,8 @@
 		sensors = <94>;		/* 0x5E */
 		sensing_mode = "balance";
 		hotplug_enable = <1>;
-		hotplug_in_threshold = <93>;
-		hotplug_out_threshold = <94>;
+		hotplug_in_threshold = <90>;
+		hotplug_out_threshold = <95>;
 		#include "exynos9810-tmu-sensor-conf.dtsi"
 	};
 
