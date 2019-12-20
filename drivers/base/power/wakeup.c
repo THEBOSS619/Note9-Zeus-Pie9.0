@@ -23,8 +23,37 @@
 #include <linux/wakeup_reason.h>
 #endif
 #include <trace/events/power.h>
+#include <linux/moduleparam.h>
 
 #include "power.h"
+
+static bool enable_sensorhub_wl = true;
+module_param(enable_sensorhub_wl, bool, 0644);
+
+static bool enable_ssp_wl = true;
+module_param(enable_ssp_wl, bool, 0644);
+
+static bool enable_mmc0_detect_wl = true;
+module_param(enable_mmc0_detect_wl, bool, 0644);
+
+static bool enable_wlan_rx_wake_wl = true;
+module_param(enable_wlan_rx_wake_wl, bool, 0644);
+
+static bool enable_wlan_ctrl_wake_wl = true;
+module_param(enable_wlan_ctrl_wake_wl, bool, 0644);
+
+static bool enable_wlan_wake_wl = true;
+module_param(enable_wlan_wake_wl, bool, 0644);
+
+static bool enable_wlan_wd_wake_wl = true;
+module_param(enable_wlan_wd_wake_wl, bool, 0644);
+
+static bool enable_bcmdhd4359_wl = true;
+module_param(enable_bcmdhd4359_wl, bool, 0644);
+
+static bool enable_bluedroid_timer_wl = true;
+module_param(enable_bluedroid_timer_wl, bool, 0644);
+
 
 
 #ifdef CONFIG_BOEFFLA_WL_BLOCKER
@@ -36,6 +65,30 @@ bool wl_blocker_debug = false;
 
 static void wakeup_source_deactivate(struct wakeup_source *ws);
 #endif
+
+static int enable_bcmspi_ws = 1;
+static int enable_lli_pm_ws = 1;
+static int enable_radio_interface_ws = 1;
+static int enable_umts_ipc0_ws = 1;
+
+module_param(enable_bcmspi_ws, int, 0644);
+module_param(enable_lli_pm_ws, int, 0644);
+module_param(enable_radio_interface_ws, int, 0644);
+module_param(enable_umts_ipc0_ws, int, 0644);
+static bool enable_ssp_wake_lock_ws = true;
+module_param(enable_ssp_wake_lock_ws, bool, 0644);
+static bool enable_wlan_rx_wake_ws = true;
+module_param(enable_wlan_rx_wake_ws, bool, 0644);
+static bool enable_wlan_ctrl_wake_ws = true;
+module_param(enable_wlan_ctrl_wake_ws, bool, 0644);
+static bool enable_wlan_wake_ws = true;
+module_param(enable_wlan_wake_ws, bool, 0644);
+static bool enable_mmc0_detect_ws = true;
+module_param(enable_mmc0_detect_ws, bool, 0644);
+static bool enable_bbd_wake_lock_ws = true;
+module_param(enable_bbd_wake_lock_ws, bool, 0644);
+static bool enable_GPSD_ws = true;
+module_param(enable_GPSD_ws, bool, 0644);
 
 
 /*
@@ -551,6 +604,69 @@ static void wakeup_source_activate(struct wakeup_source *ws)
 	if (WARN_ONCE(wakeup_source_not_registered(ws),
 			"unregistered wakeup source\n"))
 		return;
+
+	if ((!enable_wlan_rx_wake_ws && !strcmp(ws->name, "wlan_rx_wake")) ||
+		(!enable_wlan_ctrl_wake_ws && !strcmp(ws->name, "wlan_ctrl_wake")) ||
+		(!enable_mmc0_detect_ws && !strcmp(ws->name, "mmc0_detect")) ||
+		(!enable_bbd_wake_lock_ws && !strcmp(ws->name, "bbd_wake_lock")) ||
+		(!enable_GPSD_ws && !strcmp(ws->name, "GPSD")) ||
+		(!enable_ssp_wake_lock_ws && !strcmp(ws->name, "ssp_wake_lock")) ||
+		(!enable_wlan_wake_ws && !strcmp(ws->name, "wlan_wake"))) {
+		/*
+		 * let's try and deactivate this wakeup source since the user
+		 * clearly doesn't want it. The user is responsible for any
+		 * adverse effects and has been warned about it
+		 */
+		wakeup_source_deactivate(ws);
+ 		return;
+	}
+
+	if (!enable_sensorhub_wl && !strcmp(ws->name, "ssp_sensorhub_wake_lock"))
+		return;
+
+	if (!enable_ssp_wl && !strcmp(ws->name, "ssp_wake_lock"))
+		return;
+
+	if (!enable_mmc0_detect_wl && !strcmp(ws->name, "mmc0_detect"))
+		return;
+
+	if (!enable_wlan_wake_wl && !strcmp(ws->name, "wlan_wake"))
+		return;
+
+	if (!enable_wlan_ctrl_wake_wl && !strcmp(ws->name, "wlan_ctrl_wake"))
+		return;
+
+	if (!enable_wlan_rx_wake_wl && !strcmp(ws->name, "wlan_rx_wake"))
+		return;
+
+	if (!enable_wlan_wd_wake_wl && !strcmp(ws->name, "wlan_wd_wake"))
+		return;
+
+	if (!enable_bcmdhd4359_wl && !strcmp(ws->name, "bcmdhd4359_wl"))
+		return;
+
+	if (!enable_bluedroid_timer_wl && !strcmp(ws->name, "bluedroid_timer"))
+		return;
+
+	if (!enable_bcmspi_ws && !strcmp(ws->name, "bcm_spi_wake_lock")) {
+		pr_info("wakeup source bcmspi activation skipped\n");
+		return;
+	}
+
+	if (!enable_lli_pm_ws && !strcmp(ws->name, "lli_pm_wsock")) {
+		pr_info("wakeup source lli_pm activation skipped\n");
+		return;
+	}
+
+	if (!enable_radio_interface_ws && !strcmp(ws->name, "radio-interface")) {
+		pr_info("wakeup source radio-interface activation skipped\n");
+		return;
+	}
+
+	if (!enable_umts_ipc0_ws && !strcmp(ws->name, "umts_ipc0")) {
+		pr_info("wakeup source umts_ipc0 activation skipped\n");
+		return;
+	}
 
 	/*
 	 * active wakeup source should bring the system
