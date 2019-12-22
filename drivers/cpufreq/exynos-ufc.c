@@ -35,8 +35,8 @@
 static int last_max_limit = -1;
 static int sse_mode;
 
-unsigned int big_throttle_limit = 0;
-unsigned int little_throttle_limit = 0;
+unsigned int big_throttle_limit = 2314000;
+unsigned int little_throttle_limit = 2002000;
 
 bool is_throttle_limit(unsigned int clipped_freq, int cpu)
 {
