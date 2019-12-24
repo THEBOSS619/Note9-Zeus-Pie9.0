@@ -518,7 +518,7 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 		selected_swap_rss = swap_rss;
 #endif
 		pcred = __task_cred(p);
-		uid = pcred->uid;
+		uid = pcred->uid.val;
 		if (avoid_to_kill(uid) || protected_apps(p->comm)){
 			if (tasksize * (long)(PAGE_SIZE / 1024) >= 100000){
 				selected = p;
