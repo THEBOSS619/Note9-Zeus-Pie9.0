@@ -247,8 +247,10 @@ static int gpu_dvfs_update_config_data_from_dt(struct kbase_device *kbdev)
 	struct exynos_context *platform = (struct exynos_context *) kbdev->platform_context;
 
 	gpu_update_config_data_int(np, "gpu_debug_level", &gpu_debug_level);
+#ifdef CONFIG_MALI_EXYNOS_TRACE
 	gpu_update_config_data_int(np, "gpu_trace_level", &gpu_trace_level);
 	gpu_set_trace_level(gpu_trace_level);
+#endif
 
 	gpu_update_config_data_int(np, "g3d_cmu_cal_id", &platform->g3d_cmu_cal_id);
 #ifdef CONFIG_MALI_DVFS
@@ -269,7 +271,7 @@ static int gpu_dvfs_update_config_data_from_dt(struct kbase_device *kbdev)
 		platform->governor_type = G3D_DVFS_GOVERNOR_DEFAULT;
 	}
 
-#ifdef CONFIG_CAL_IF
+#if 0
 	platform->gpu_dvfs_start_clock = cal_dfs_get_boot_freq(platform->g3d_cmu_cal_id);
 	GPU_LOG(DVFS_INFO, DUMMY, 0u, 0u, "get g3d start clock from ect : %d\n", platform->gpu_dvfs_start_clock);
 #else
@@ -284,12 +286,9 @@ static int gpu_dvfs_update_config_data_from_dt(struct kbase_device *kbdev)
 
 	gpu_update_config_data_int(np, "gpu_pmqos_cpu_cluster_num", &platform->gpu_pmqos_cpu_cluster_num);
 	gpu_update_config_data_int(np, "gpu_max_clock", &platform->gpu_max_clock);
-#ifdef CONFIG_CAL_IF
-	platform->gpu_max_clock_limit = (int)cal_dfs_get_max_freq(platform->g3d_cmu_cal_id);
-#else
 	gpu_update_config_data_int(np, "gpu_max_clock_limit", &platform->gpu_max_clock_limit);
-#endif
 	gpu_update_config_data_int(np, "gpu_min_clock", &platform->gpu_min_clock);
+	gpu_update_config_data_int(np, "gpu_min_clock_limit", &platform->gpu_min_clock_limit);
 	gpu_update_config_data_int(np, "gpu_dvfs_bl_config_clock", &platform->gpu_dvfs_config_clock);
 	gpu_update_config_data_int(np, "gpu_default_voltage", &platform->gpu_default_vol);
 	gpu_update_config_data_int(np, "gpu_cold_minimum_vol", &platform->cold_min_vol);
