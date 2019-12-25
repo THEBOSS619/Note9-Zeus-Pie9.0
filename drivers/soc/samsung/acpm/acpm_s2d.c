@@ -78,12 +78,13 @@ int exynos_acpm_s2d_update_en(void)
 	config.cmd = cmd;
 	config.response = true;
 	config.indirection = false;
+#ifdef CONFIG_SEC_DEBUG
 	config.cmd[1] = exynos_ss_get_item_paddr("log_s2d");
 	if (s2d_en)
 		config.cmd[2] = s2d_sel_block;
 	else
 		config.cmd[2] = 0;
-
+#endif
 	before = sched_clock();
 	ret = acpm_ipc_send_data(acpm_s2d->ch, &config);
 	after = sched_clock();
