@@ -1111,7 +1111,7 @@ static int __init exynos_hpgov_parse_dt(void)
 	max_freq = arg_cpu_max_c2;
 	if (!max_freq)
 		goto exit;
-	exynos_hpgov.maxfreq_table[SINGLE] = max_freq;
+	exynos_hpgov.maxfreq_table[SINGLE] = 2964000;
 
 	if (arg_overclock == 1) {
 		exynos_hpgov.maxfreq_table[DUAL] = 2314000;
@@ -1120,10 +1120,11 @@ static int __init exynos_hpgov_parse_dt(void)
 		exynos_hpgov.maxfreq_table[DISABLE] = 2314000;
 
 	} else if (arg_overclock == 2) {
+		exynos_hpgov.maxfreq_table[SINGLE] = 2964000;
 		exynos_hpgov.maxfreq_table[DUAL] = 2496000;
-		exynos_hpgov.maxfreq_table[TRIPLE] = 2314000;
+		exynos_hpgov.maxfreq_table[TRIPLE] = 2496000;
 		exynos_hpgov.maxfreq_table[QUAD] = 2314000;
-		exynos_hpgov.maxfreq_table[DISABLE] = max_freq;
+		exynos_hpgov.maxfreq_table[DISABLE] = 2314000;
 
 	} else {
 		if (of_property_read_u32(np, "dual_freq", &freq))
@@ -1138,7 +1139,7 @@ static int __init exynos_hpgov_parse_dt(void)
 			goto exit;
 		exynos_hpgov.maxfreq_table[QUAD] = min(freq, max_freq);
 	}
-	exynos_hpgov.maxfreq_table[DISABLE] = exynos_hpgov.maxfreq_table[DUAL];
+	exynos_hpgov.maxfreq_table[DISABLE] = exynos_hpgov.maxfreq_table[QUAD];
 
 	for (i = 0; i <= QUAD; i++)
 		pr_info("HP_GOV: mode %d: max_freq = %d\n",
